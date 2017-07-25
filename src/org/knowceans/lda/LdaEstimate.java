@@ -333,7 +333,11 @@ public class LdaEstimate {
             file.delete();
         }
 
-        args = new String[]{"est", "0.5", "3", "settings.txt", "C:\\Users\\zhangshangzhi\\Desktop\\pic\\lda.dat", "seeded", "C:\\Users\\zhangshangzhi\\Desktop\\pic\\lda.model"};
+        if (args.length == 0) {
+            args = new String[]{"est", "0.5", "3", "settings.txt",
+                    "C:\\Users\\zhangshangzhi\\Desktop\\pic\\lda.dat", "seeded",
+                    "C:\\Users\\zhangshangzhi\\Desktop\\pic\\lda.model"};
+        }
 
         int i = 0;
         double y = 0;
