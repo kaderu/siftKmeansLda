@@ -13,6 +13,8 @@ public class WareMsg {
 
     private String title;
 
+    private String imgUri;
+
     public long getWareId() {
         return wareId;
     }
@@ -43,5 +45,13 @@ public class WareMsg {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getImgUri() {
+        return imgUri;
+    }
+
+    public void setImgUri(String imgUri) {
+        this.imgUri = imgUri;
     }
 }

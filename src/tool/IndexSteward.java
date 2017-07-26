@@ -2,59 +2,23 @@ package tool;
 
 import pic.algorithm.translate.TranslateUtil;
 
-import java.io.*;
 import java.util.*;
+
+import static tool.IndexSteward.INDEX_TYPE.advance_keyword_translate;
 
 /**
  * Created by zhangshangzhi on 2017/7/25.
  */
 public class IndexSteward {
 
-    public static void index(String docPath, String dictFilePath, String indexFilePath) {
-        List<WareMsg> wareMsgList = getWareMsgList(docPath);
-        indexMaker(wareMsgList, dictFilePath, indexFilePath);
+    public enum INDEX_TYPE {
+        keyword_translate,
+        advance_keyword_translate
     }
 
-    public static List<WareMsg> getWareMsgList(String path) {
-        List<WareMsg> wareMsgList = new ArrayList<>();
-
-        FileInputStream fis = null;
-        InputStreamReader isr = null;
-        BufferedReader br = null; //用于包装InputStreamReader,提高处理性能。因为BufferedReader有缓冲的，而InputStreamReader没有。
-        try {
-            String str = "";
-            String[] eles;
-            WareMsg wareMsg;
-            fis = new FileInputStream(path);
-            // 从文件系统中的某个文件中获取字节
-            isr = new InputStreamReader(fis);// InputStreamReader 是字节流通向字符流的桥梁,
-            br = new BufferedReader(isr);// 从字符输入流中读取文件中的内容,封装了一个new InputStreamReader的对象
-            while ((str = br.readLine()) != null) {
-                if ("".equals(str.trim())) {
-                    continue;
-                }
-                wareMsg = new WareMsg();
-                eles = str.split("\t");
-                wareMsg.setWareId(Long.parseLong(eles[0]));
-                wareMsg.setKeywords(eles[1].split(","));
-                wareMsg.setBrandName(eles[2]);
-                wareMsg.setTitle(eles[3]);
-                wareMsgList.add(wareMsg);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        finally {
-            try {
-                br.close();
-                isr.close();
-                fis.close();
-                // 关闭的时候最好按照先后顺序关闭最后开的先关闭所以先关s,再关n,最后关m
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return wareMsgList;
-        }
+    public static void index(String docPath, String dictFilePath, String indexFilePath) {
+        List<WareMsg> wareMsgList = FileSteward.getWareMsgList(docPath);
+        indexMaker(wareMsgList, dictFilePath, indexFilePath);
     }
 
     public static void indexMaker(List<WareMsg> wareMsgList, String dictFilePath, String indexFilePath) {
@@ -69,7 +33,7 @@ public class IndexSteward {
         for (String ele : dictSet) {
             dicSet.add(ele);
         }
-        MultiLayerIndexMap dicMap = dicTranslateDealer(dicSet, "keyword_translate");
+        MultiLayerIndexMap dicMap = dicTranslateDealer(dicSet, advance_keyword_translate);
         dicMap.store(dictFilePath);
 
         // make index map
@@ -92,12 +56,11 @@ public class IndexSteward {
         FileSteward.storeIndex(mapList, indexFilePath);
     }
 
-    public static MultiLayerIndexMap dicTranslateDealer(Set<String> dicSet, String methodType) {
-        switch (methodType) {
-            case "keyword_translate":
-                return dicTranslateMethodKeywordTranslate(dicSet);
-            case "advance_keyword_translate":
-                dicTranslateMethodAdvanceKeywordTranslate(dicSet);
+    public static MultiLayerIndexMap dicTranslateDealer(Set<String> dicSet, Enum methodType) {
+        if (methodType.equals(INDEX_TYPE.keyword_translate)) {
+            return dicTranslateMethodKeywordTranslate(dicSet);
+        } else if (methodType.equals(advance_keyword_translate)) {
+            return dicTranslateMethodAdvanceKeywordTranslate(dicSet);
         }
         return null;
     }
@@ -187,7 +150,7 @@ public class IndexSteward {
 //        return map;
 //    }
 
-    public static Map<String, Integer> dicTranslateMethodAdvanceKeywordTranslate(Set<String> dicSet) {
+    public static MultiLayerIndexMap dicTranslateMethodAdvanceKeywordTranslate(Set<String> dicSet) {
         Set<String> translateSet = new HashSet<>(); // set to collect cell word and make index
         Map<String, List<String>> ori2ExtendMap = new HashMap<>(); // map reflect every oriword to a list of cell word (after translate)
         Map<String, Integer> map = new HashMap<>();
@@ -217,9 +180,12 @@ public class IndexSteward {
                 }
             }
             double meanCnt = kernelCnt * 1.0 / popularCellWordCntMap.size();
-            for (String kernelWord : popularCellWordCntMap.keySet()) {
-                if (popularCellWordCntMap.get(kernelWord) < meanCnt) {
-                    popularCellWordCntMap.remove(kernelWord);
+            Iterator it = popularCellWordCntMap.keySet().iterator();
+            while (it.hasNext()) {
+                String key = (String) it.next();
+                if (popularCellWordCntMap.get(key) < meanCnt) {
+                    it.remove();//添加此行代码
+                    popularCellWordCntMap.remove(key);
                 }
             }
 
@@ -245,6 +211,9 @@ public class IndexSteward {
     private static List<String> getHideKernelWord(Set<String> wordSet, String keyword) {
         List<String> wordList = new ArrayList<>();
         for (String word : wordSet) {
+            if (word.length() <= 2) {
+                continue;
+            }
             if (keyword.indexOf(word) != -1) {
                 wordList.add(word);
             }

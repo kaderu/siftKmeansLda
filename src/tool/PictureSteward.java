@@ -1,18 +1,31 @@
 package tool;
 
+import actor.DocLdaActor;
+
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by zhangshangzhi on 2017/7/25.
  */
 public class PictureSteward {
 
+    public final static String picture_prefix_path = "//img20.jd.id/Indonesia/s172x172_///img20.jd.id/Indonesia/";
+
     public static void main(String[] args) {
-        String url = "http://localhost:8080/image/touxiang.png";
-        String path = "F:/test.jpg";
-        downloadPicture(url, path);
+        long categoryId = 75061382;
+        DocLdaActor.initalPath(categoryId);
+        List<WareMsg> wareMsgList = FileSteward.getWareMsgList(DocLdaActor.wkbt_file);
+        String url = "";
+        String path = "";
+        for (WareMsg wareMsg : wareMsgList) {
+            url = picture_prefix_path + wareMsg.getImgUri();
+            path = DocLdaActor.prefix_path + "pic_" + categoryId + "\\" + wareMsg.getWareId() + ".jpg";
+                    downloadPicture(url, path);
+        }
     }
     //链接url下载图片
     private static void downloadPicture(String onlineUrl, String localPath) {
@@ -43,4 +56,27 @@ public class PictureSteward {
             e.printStackTrace();
         }
     }
+
+    public static void picturesRename(String path, Map<Long, Integer> map) {
+        File file = new File(path);
+        File [] files = file.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            File oriFile = files[i];
+            String oriFileName = oriFile.getName();   //根据后缀判断
+            if (oriFileName.endsWith(".jpg")) {
+                String newFileName = "";
+                String[] elements = oriFile.getName().split("\\_|\\.");
+                if (elements.length == 3) {
+                    newFileName = map.get(Long.parseLong(elements[1])) + "_" + elements[1] + "." + elements[2];
+                } else if (elements.length == 2) {
+                    newFileName = map.get(Long.parseLong(elements[0])) + "_" + elements[0] + "." + elements[1];
+                } else {
+                    continue;
+                }
+                File newFile = new File(path + "\\" + newFileName);
+                oriFile.renameTo(newFile);
+            }
+        }
+    }
+
 }

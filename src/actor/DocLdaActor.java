@@ -1,7 +1,11 @@
 package actor;
 
 import org.knowceans.lda.LdaEstimate;
+import tool.FileSteward;
 import tool.IndexSteward;
+import tool.PictureSteward;
+
+import java.util.Map;
 
 /**
  * Created by zhangshangzhi on 2017/7/25.
@@ -23,6 +27,16 @@ public class DocLdaActor {
 
 
     public static void main(String[] args) {
+
+        actor();
+
+//        long categoryId = 75061382;
+//        initalPath(categoryId);
+//        Map<Long, Integer> map = FileSteward.mergTopic2WareId(da_model_path, wkbt_file);
+//        PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
+    }
+
+    public static void actor() {
         // step.1 determine a category_id, let's say, 75061382
         long categoryId = 75061382;
         initalPath(categoryId);
@@ -34,12 +48,17 @@ public class DocLdaActor {
         IndexSteward.index(wkbt_file, wkbt_dict_file, lda_input_file);
 
         // step.4 work LDA and get lda.model
-        args = new String[]{"est", "0.5", String.valueOf(clusterNum), "settings.txt",
+        FileSteward.delete(da_model_path);
+        String[] args = new String[]{"est", "0.5", String.valueOf(clusterNum), "settings.txt",
                 lda_input_file, "seeded", da_model_path};
         LdaEstimate.main(args);
+
+        // step.5 if we have prepared picture locally, then this method will help group them.
+        Map<Long, Integer> map = FileSteward.mergTopic2WareId(da_model_path, wkbt_file);
+        PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
     }
 
-    private static void initalPath(long categoryId) {
+    public static void initalPath(long categoryId) {
         wkbt_file = prefix_path + "pic_" + categoryId + "\\" + wkbt_file_name;
         wkbt_dict_file = prefix_path + "pic_" + categoryId + "\\" + wkbt_dict_file_name;
         lda_input_file = prefix_path + "pic_" + categoryId + "\\" + lda_input_file_name;
