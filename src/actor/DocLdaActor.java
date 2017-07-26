@@ -14,7 +14,7 @@ public class DocLdaActor {
     public static final String lda_input_file_name = "wkbtLda.dat";
     public static final String lda_model_path_name = "wkbtLda.model";
 
-    public static final int clusterNum = 10;
+    public static final int clusterNum = 5;
 
     public static String wkbt_file;
     public static String wkbt_dict_file;
@@ -25,6 +25,7 @@ public class DocLdaActor {
     public static void main(String[] args) {
         // step.1 determine a category_id, let's say, 75061382
         long categoryId = 75061382;
+        initalPath(categoryId);
 
         // step.2 get wareId_keyword_brandName_title from mysql online, store as wkbt.txt in PATH C:\Users\zhangshangzhi\Desktop\pic\pic_75061382
         // help yourself do this.
