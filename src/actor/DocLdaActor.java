@@ -32,6 +32,13 @@ public class DocLdaActor {
 
 //        long categoryId = 75061382;
 //        initalPath(categoryId);
+//
+//        FileSteward.delete(da_model_path);
+//        args = new String[]{"est", "0.5", String.valueOf(clusterNum), "settings.txt",
+//                lda_input_file, "seeded", da_model_path};
+//        LdaEstimate.main(args);
+//
+//        // step.5 if we have prepared picture locally, then this method will help group them.
 //        Map<Long, Integer> map = FileSteward.mergTopic2WareId(da_model_path, wkbt_file);
 //        PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
     }

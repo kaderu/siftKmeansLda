@@ -8,12 +8,18 @@ import java.util.*;
  */
 public class FileSteward {
 
+    private Map<String, String> addDictMap;
+
+    public FileSteward() {
+        addDictMap = new HashMap<>();
+    }
+
     public static void delete(String path) {
         File file = new File(path);
         if (!file.exists()) {
             return;
         }
-        if (file.canRead()) {
+        if (file.isFile()) {
             file.delete();
         } else if (file.isDirectory()) {
             String[] children = file.list();
@@ -90,6 +96,9 @@ public class FileSteward {
                 wareMsg.setKeywords(eles[1].split(","));
                 wareMsg.setBrandName(eles[2]);
                 wareMsg.setTitle(eles[3]);
+                if (eles.length >= 5) {
+                    wareMsg.setImgUri(eles[4]);
+                }
                 wareMsgList.add(wareMsg);
             }
         } catch (Exception e) {
@@ -162,6 +171,57 @@ public class FileSteward {
             }
         }
         return map;
+    }
+
+    public Map<String, String> readTranslateFile() {
+        Map<String, String> map = new HashMap<>();
+        if (!new File("translate.dic").exists()) {
+            return map;
+        }
+
+        FileInputStream fis = null;
+        InputStreamReader isr = null;
+        BufferedReader br = null;
+        try {
+            String str = "";
+            String[] eles;
+            fis = new FileInputStream("translate.dic");
+            isr = new InputStreamReader(fis);
+            br = new BufferedReader(isr);
+            while ((str = br.readLine()) != null) {
+                if ("".equals(str.trim())) {
+                    continue;
+                }
+                eles = str.split("\\s+");
+                map.put(eles[0], eles[1]);
+            }
+            br.close();
+            isr.close();
+            fis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return map;
+    }
+
+    public void storeAddTranslateFile() {
+        File file = new File("translate.dic");
+        FileWriter fw;
+        BufferedWriter bw;
+        try {
+            fw = new FileWriter(file, true);
+            bw = new BufferedWriter(fw);
+            for (Map.Entry<String, String> entry : addDictMap.entrySet()) {
+                bw.write(entry.getKey() + "\t" + entry.getValue() + "\r\n");
+            }
+            bw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Map<String, String> getAddDictMap() {
+        return addDictMap;
     }
 
     public static void main(String[] args) {

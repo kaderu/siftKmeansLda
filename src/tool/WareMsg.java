@@ -1,5 +1,8 @@
 package tool;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by zhangshangzhi on 2017/7/25.
  */
@@ -12,6 +15,8 @@ public class WareMsg {
     private String brandName;
 
     private String title;
+
+    private String[] titleCells;
 
     private String imgUri;
 
@@ -45,6 +50,15 @@ public class WareMsg {
 
     public void setTitle(String title) {
         this.title = title;
+        String[] titleOriCells = title.toLowerCase().replaceAll("[\\(\\)\\-&/\\\\]", " ")
+                .replaceAll("[0-9]+", " ").split("\\s+");
+        List<String> celllist = new ArrayList<>();
+        for (String cell : titleOriCells) {
+            if (cell.length() >= 3) {
+                celllist.add(cell);
+            }
+        }
+        titleCells = celllist.toArray(new String[celllist.size()]);
     }
 
     public String getImgUri() {
@@ -53,5 +67,18 @@ public class WareMsg {
 
     public void setImgUri(String imgUri) {
         this.imgUri = imgUri;
+    }
+
+    public String[] getTitleCells() {
+        return titleCells;
+    }
+
+    public static void main(String[] args) {
+        String qwe = "MY BABY Hair & Body Wash-zszszszsz200ml(Free My Baby Wash\\lap)wqwr/qwzz";
+        String[] titleOriCells = qwe.toLowerCase().replaceAll("[()\\-&/\\\\]", " ")
+                .replaceAll("[0-9]+", " ").split("\\s+");
+        for (String ele : titleOriCells) {
+            System.out.println(ele);
+        }
     }
 }
