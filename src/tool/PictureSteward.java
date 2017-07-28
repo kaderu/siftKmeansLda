@@ -13,18 +13,22 @@ import java.util.Map;
  */
 public class PictureSteward {
 
-    public final static String picture_prefix_path = "//img20.jd.id/Indonesia/s172x172_///img20.jd.id/Indonesia/";
+    public final static String picture_prefix_path = "http://img20.jd.id/Indonesia/s172x172_///img20.jd.id/Indonesia/";
 
     public static void main(String[] args) {
-        long categoryId = 75061382;
+//        long categoryId = 75061382;
+        long categoryId = 75061316;
         DocLdaActor.initalPath(categoryId);
         List<WareMsg> wareMsgList = FileSteward.getWareMsgList(DocLdaActor.wkbt_file);
+        System.out.println("Begin picture download, wareMsgList size is " + wareMsgList.size());
         String url = "";
         String path = "";
+        int i = 0;
         for (WareMsg wareMsg : wareMsgList) {
             url = picture_prefix_path + wareMsg.getImgUri();
             path = DocLdaActor.prefix_path + "pic_" + categoryId + "\\" + wareMsg.getWareId() + ".jpg";
                     downloadPicture(url, path);
+            System.out.println("picture " + i++ + " download to local finished.");
         }
     }
     //链接url下载图片

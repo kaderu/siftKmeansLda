@@ -132,7 +132,10 @@ public class IndexSteward {
 
         String uniformWord;
         // step1. oriword translate
+        System.out.println("### dicSet size is " + dicSet.size() + " ###");
+        int index = 0;
         for (String dictword : dicSet) {
+            System.out.println("### translate the " + (index++) + " one ... ###");
             uniformWord = getUniformWord(dictword, fileSteward, dictMap);
 
             translateSet.add(uniformWord);
@@ -141,6 +144,8 @@ public class IndexSteward {
                 add(uniWord);
             }});
         }
+        System.out.println("************");
+        System.out.println("************ addDicSet size is " + fileSteward.getAddDictMap().size());
         fileSteward.storeAddTranslateFile();
 
         // step2. with oriword set, we process some popular cell words

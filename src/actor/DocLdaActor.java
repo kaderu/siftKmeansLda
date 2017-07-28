@@ -18,7 +18,7 @@ public class DocLdaActor {
     public static final String lda_input_file_name = "wkbtLda.dat";
     public static final String lda_model_path_name = "wkbtLda.model";
 
-    public static final int clusterNum = 5;
+    public static final int clusterNum = 50;
 
     public static String wkbt_file;
     public static String wkbt_dict_file;
@@ -28,24 +28,25 @@ public class DocLdaActor {
 
     public static void main(String[] args) {
 
-        actor();
+//        actor();
 
-//        long categoryId = 75061382;
-//        initalPath(categoryId);
+        long categoryId = 75061316;
+        initalPath(categoryId);
 //
 //        FileSteward.delete(da_model_path);
 //        args = new String[]{"est", "0.5", String.valueOf(clusterNum), "settings.txt",
 //                lda_input_file, "seeded", da_model_path};
 //        LdaEstimate.main(args);
 //
-//        // step.5 if we have prepared picture locally, then this method will help group them.
-//        Map<Long, Integer> map = FileSteward.mergTopic2WareId(da_model_path, wkbt_file);
-//        PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
+        // step.5 if we have prepared picture locally, then this method will help group them.
+        Map<Long, Integer> map = FileSteward.mergTopic2WareId(da_model_path, wkbt_file);
+        PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
     }
 
     public static void actor() {
         // step.1 determine a category_id, let's say, 75061382
-        long categoryId = 75061382;
+//        long categoryId = 75061382;
+        long categoryId = 75061316;
         initalPath(categoryId);
 
         // step.2 get wareId_keyword_brandName_title from mysql online, store as wkbt.txt in PATH C:\Users\zhangshangzhi\Desktop\pic\pic_75061382
@@ -61,8 +62,8 @@ public class DocLdaActor {
         LdaEstimate.main(args);
 
         // step.5 if we have prepared picture locally, then this method will help group them.
-        Map<Long, Integer> map = FileSteward.mergTopic2WareId(da_model_path, wkbt_file);
-        PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
+//        Map<Long, Integer> map = FileSteward.mergTopic2WareId(da_model_path, wkbt_file);
+//        PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
     }
 
     public static void initalPath(long categoryId) {
