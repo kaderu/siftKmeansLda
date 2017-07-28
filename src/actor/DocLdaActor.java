@@ -3,9 +3,6 @@ package actor;
 import org.knowceans.lda.LdaEstimate;
 import tool.FileSteward;
 import tool.IndexSteward;
-import tool.PictureSteward;
-
-import java.util.Map;
 
 /**
  * Created by zhangshangzhi on 2017/7/25.
@@ -28,10 +25,10 @@ public class DocLdaActor {
 
     public static void main(String[] args) {
 
-//        actor();
+        actor();
 
-        long categoryId = 75061316;
-        initalPath(categoryId);
+//        long categoryId = 75061316;
+//        initalPath(categoryId);
 //
 //        FileSteward.delete(da_model_path);
 //        args = new String[]{"est", "0.5", String.valueOf(clusterNum), "settings.txt",
@@ -39,8 +36,8 @@ public class DocLdaActor {
 //        LdaEstimate.main(args);
 //
         // step.5 if we have prepared picture locally, then this method will help group them.
-        Map<Long, Integer> map = FileSteward.mergTopic2WareId(da_model_path, wkbt_file);
-        PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
+//        Map<Long, Integer> map = FileSteward.mergTopic2WareId(da_model_path, wkbt_file);
+//        PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
     }
 
     public static void actor() {
