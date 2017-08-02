@@ -19,6 +19,10 @@ public class PictureSteward {
 //        long categoryId = 75061382;
         long categoryId = 75061316;
         DocLdaActor.initalPath(categoryId);
+
+        // rename all picture 2 orignal
+        picturesRename(DocLdaActor.prefix_path + "pic_" + categoryId);
+
         List<WareMsg> wareMsgList = FileSteward.getWareMsgList(DocLdaActor.wkbt_file);
         System.out.println("Begin picture download, wareMsgList size is " + wareMsgList.size());
         String url = "";
@@ -27,8 +31,19 @@ public class PictureSteward {
         for (WareMsg wareMsg : wareMsgList) {
             url = picture_prefix_path + wareMsg.getImgUri();
             path = DocLdaActor.prefix_path + "pic_" + categoryId + "\\" + wareMsg.getWareId() + ".jpg";
+
+            int time = 0;
+            if (!(new File(path).exists())) {
+                while (!(new File(path).exists()) &&
+                        time < 3) {
                     downloadPicture(url, path);
-            System.out.println("picture " + i++ + " download to local finished.");
+                }
+                if (new File(path).exists()) {
+                    System.out.println("picture " + i++ + " download to local finished.");
+                } else {
+                    System.out.println("picture " + i++ + " download to local finished. WareId is " + wareMsg.getWareId());
+                }
+            }
         }
     }
     //链接url下载图片
@@ -61,7 +76,7 @@ public class PictureSteward {
         }
     }
 
-    public static void picturesRename(String path, Map<Long, Integer> map) {
+    public static void picturesRename(String path, Map<Long, Number> map) {
         File file = new File(path);
         File [] files = file.listFiles();
         for (int i = 0; i < files.length; i++) {
@@ -83,4 +98,26 @@ public class PictureSteward {
         }
     }
 
+
+    public static void picturesRename(String path) {
+        File file = new File(path);
+        File [] files = file.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            File oriFile = files[i];
+            String oriFileName = oriFile.getName();   //根据后缀判断
+            if (oriFileName.endsWith(".jpg")) {
+                String newFileName = "";
+                String[] elements = oriFile.getName().split("\\_|\\.");
+                if (elements.length == 3) {
+                    newFileName = elements[1] + "." + elements[2];
+                } else if (elements.length == 2) {
+                    newFileName = elements[0] + "." + elements[1];
+                } else {
+                    continue;
+                }
+                File newFile = new File(path + "\\" + newFileName);
+                oriFile.renameTo(newFile);
+            }
+        }
+    }
 }

@@ -25,7 +25,8 @@ public class MultiLayerIndexMap extends HashMap {
 
     @Override
     public List<Integer> get(Object key) {
-        if (key == null) {
+        if (key == null ||
+                String.valueOf(key).trim().equals("")) {
             return null;
         }
         final String oriWord = String.valueOf(key);
@@ -37,9 +38,13 @@ public class MultiLayerIndexMap extends HashMap {
                 add(oriWord);
             }};
         }
+
         List<Integer> indexList = new ArrayList<>();
         for (String cell : cellwordList) {
-            indexList.add(indexMap.get(cell));
+            Integer ind = indexMap.get(cell);
+            if (ind != null) {
+                indexList.add(ind);
+            }
         }
         return indexList;
     }
