@@ -3,8 +3,11 @@ package actor;
 import org.knowceans.lda.LdaEstimate;
 import tool.FileSteward;
 import tool.IndexSteward;
+import tool.LateWork;
 import tool.PictureSteward;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,7 +22,7 @@ public class DocLdaActor {
     public static final String lda_model_path_name = "wkbtLda.model";
     public static final String ori_vs_cur_file_name = "oriVsCur.txt";
 
-    public static final int clusterNum = 150;
+    public static final int clusterNum = 100;
 
     public static String wkbt_file;
     public static String wkbt_dict_file;
@@ -35,7 +38,7 @@ public class DocLdaActor {
 
 //        long categoryId = 75061316;
 //        initalPath(categoryId);
-//        IndexSteward.index(wkbt_file, wkbt_dict_file, lda_input_file);
+//        lateWorkActor();
     }
 
     public static void actor() {
@@ -88,5 +91,34 @@ public class DocLdaActor {
         lda_input_file = prefix_path + "pic_" + categoryId + "\\" + lda_input_file_name;
         da_model_path = prefix_path + "pic_" + categoryId + "\\" + lda_model_path_name;
         ori_vs_cur_file = prefix_path + "pic_" + categoryId + "\\" + ori_vs_cur_file_name;
+    }
+
+    // get dealed title wanghui need
+    public static void wareTitleFile() {
+        FileSteward.dealWareTitleFile(wkbt_file, wkbt_file.replace("wkbt.txt", "wkbt_ex.txt"));
+    }
+
+    // topN term in current leaf_cate and topic
+    public static void lateWorkActor() {
+        LateWork lateWork = new LateWork(ori_vs_cur_file);
+
+//        long cateId = 75061333;
+//        long topicId = 26;
+//        lateWork.getPopularTerms(cateId, topicId);
+
+
+        List<Long> wareIdList = new ArrayList<Long>() {{
+            add(50029405L);
+            add(50024953L);
+            add(679578L);
+        }};
+
+        for (long wareId : wareIdList) {
+            System.out.println("\n### wareId is: " + wareId);
+            lateWork.getWareIndexComment(wareId);
+        }
+
+
+
     }
 }

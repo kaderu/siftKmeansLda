@@ -2,6 +2,7 @@ package tool;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by zhangshangzhi on 2017/7/25.
@@ -36,6 +37,7 @@ public class WareMsg {
     }
 
     public void setKeywords(String keywordStr) {
+        keywordStr = keywordStr.toLowerCase();
         String[] eles = keywordStr.split(",");
         List<String> list = new ArrayList<>();
         String[] keywordTerms;
@@ -69,7 +71,7 @@ public class WareMsg {
     }
 
     public void setBrandName(String brandName) {
-        this.brandName = brandName.trim();
+        this.brandName = brandName.trim().toLowerCase();
     }
 
     public String getTitle() {
@@ -78,17 +80,32 @@ public class WareMsg {
 
     public void setTitle(String title) {
         this.title = title;
-        if (brandName != null &&
-                 title.indexOf(brandName + " ") != -1) {
-            title.replaceAll(brandName, " ");
+        // brandName drop
+        if (brandName != null) {
+            if (title.toLowerCase().indexOf(brandName + " ") != -1) { // fit full spell
+                title = title.toLowerCase().replaceAll(brandName, " ");
+            } else if (brandName.indexOf(" ") != -1) { // split and check
+                String[] upperBrandNameEles = brandName.toUpperCase().split(" ");
+                for (String ele : upperBrandNameEles) {
+                    if (title.indexOf(ele) != -1) {
+                        title = title.replaceAll(ele, " ");
+                    }
+                }
+                title = title.toLowerCase();
+            }
+        }
+        // keyword drop
+        if (keywords != null &&
+                keywords.length != 0) {
+            for (String keyword : keywords) {
+                if (title.indexOf(keyword) != -1) {
+                    title.replace(keyword, " ");
+                }
+            }
         }
 
         // pair drop
-        List<String[]> bracketList = new ArrayList<>();
-        bracketList.add(new String[]{"(", ")"});
-        bracketList.add(new String[]{"[", "]"});
-        bracketList.add(new String[]{"{", "}"});
-        for (String[] bracketPair : bracketList) {
+        for (String[] bracketPair : FileSteward.bracketList) {
             int start = 0;
             int end = 0;
             while ((start = title.indexOf(bracketPair[0])) != -1 &&
@@ -111,7 +128,16 @@ public class WareMsg {
             title = title.substring(0, tailStart) + "\\s" + curUnit;
         }
 
-        String[] titleOriCells = title.toLowerCase().replaceAll("[\\|\\[\\]\\.\\(\\)\\*\\+\\-&/\\\\]", " ")
+        // color drop
+        title = title + " ";
+        Set<String> colorSet = ColorDictProvider.getInstance().getColorSet();
+        for (String color : colorSet) {
+            if (title.indexOf(" " + color + " ") != -1) {
+                title = title.replace(" " + color + " ", " ");
+            }
+        }
+
+        String[] titleOriCells = title.toLowerCase().replaceAll("[\\|\\[\\]\\(\\)\\*\\+\\-&/\\\\]", " ")
                 .replaceAll("[0-9]+", " ").split("\\s+");
         List<String> celllist = new ArrayList<>();
         for (String cell : titleOriCells) {
@@ -152,4 +178,5 @@ public class WareMsg {
             System.out.println(ele);
         }
     }
+
 }

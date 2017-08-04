@@ -91,11 +91,13 @@ public class IndexSteward {
                     continue;
                 }
                 List<Integer> wordIndexList = dicMap.get(cell);
+                // may we wanna give keyword phrase a bigger weight
                 for (int wordIndex : wordIndexList) {
+                    int weight = 1;
                     if (map.containsKey(wordIndex)) {
-                        map.put(wordIndex, map.get(wordIndex) + 1);
+                        map.put(wordIndex, map.get(wordIndex) + weight);
                     } else {
-                        map.put(wordIndex, 1);
+                        map.put(wordIndex, weight);
                     }
                 }
             }
@@ -180,6 +182,13 @@ public class IndexSteward {
         // calculate each kernel word weight
         for (String keyword : translateSet) {
             for (String ele : keyword.split(" ")) {
+                if (ele.equals("and") ||
+                        ele.equals("of") ||
+                        ele.equals("in") ||
+                        ele.equals("for") ||
+                        ele.length() <= 2) {
+                    continue;
+                }
                 if (!popularCellWordCntMap.containsKey(ele)) {
                     popularCellWordCntMap.put(ele, 1);
                 } else {
@@ -217,7 +226,7 @@ public class IndexSteward {
         return new MultiLayerIndexMap(ori2ExtendMap, map);
     }
 
-    private static String getUniformWord(String word, FileSteward fileSteward, Map<String, String> dictMap) {
+    public static String getUniformWord(String word, FileSteward fileSteward, Map<String, String> dictMap) {
         String uniformWord;
         if (dictMap.containsKey(word)) { // get dict from cache
             uniformWord = dictMap.get(word);
@@ -243,6 +252,14 @@ public class IndexSteward {
 
     private static List<String> getHideKernelWord(Set<String> wordSet, String keyword) {
         List<String> wordList = new ArrayList<>();
+        if (keyword.contains(" ")) { // only deal with pasted word
+            for (String ele : keyword.split("\\s+")) {
+                if (wordSet.contains(ele)) {
+                    wordList.add(ele);
+                }
+            }
+            return wordList;
+        }
         for (String word : wordSet) {
             if (word.length() <= 2) {
                 continue;
@@ -267,6 +284,16 @@ public class IndexSteward {
                         wordList.add(word);
                         wordList.addAll(cutList);
                         break;
+
+                        // only add the most important word
+//                        if (cutList.size() > 1) {
+//                            wordList.add(cutList.get(cutList.size() - 1));
+//                        } else if (keyword.endsWith(word)) {
+//                            wordList.add(word);
+//                        } else {
+//                            wordList.add(cutList.get(0));
+//                        }
+//                        break;
                     }
                 }
             }
