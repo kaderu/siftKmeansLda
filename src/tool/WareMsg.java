@@ -95,14 +95,14 @@ public class WareMsg {
             }
         }
         // keyword drop
-        if (keywords != null &&
-                keywords.length != 0) {
-            for (String keyword : keywords) {
-                if (title.indexOf(keyword) != -1) {
-                    title.replace(keyword, " ");
-                }
-            }
-        }
+//        if (keywords != null &&
+//                keywords.length != 0) {
+//            for (String keyword : keywords) {
+//                if (title.indexOf(keyword) != -1) {
+//                    title.replace(keyword, " ");
+//                }
+//            }
+//        }
 
         // pair drop
         for (String[] bracketPair : FileSteward.bracketList) {
@@ -128,8 +128,9 @@ public class WareMsg {
             title = title.substring(0, tailStart) + "\\s" + curUnit;
         }
 
+        // TODO check
         // color drop
-        title = title + " ";
+        title = title.toLowerCase() + " ";
         Set<String> colorSet = ColorDictProvider.getInstance().getColorSet();
         for (String color : colorSet) {
             if (title.indexOf(" " + color + " ") != -1) {

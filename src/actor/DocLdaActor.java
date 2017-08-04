@@ -1,10 +1,7 @@
 package actor;
 
 import org.knowceans.lda.LdaEstimate;
-import tool.FileSteward;
-import tool.IndexSteward;
-import tool.LateWork;
-import tool.PictureSteward;
+import tool.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +19,7 @@ public class DocLdaActor {
     public static final String lda_model_path_name = "wkbtLda.model";
     public static final String ori_vs_cur_file_name = "oriVsCur.txt";
 
-    public static final int clusterNum = 100;
+    public static final int clusterNum = 300;
 
     public static String wkbt_file;
     public static String wkbt_dict_file;
@@ -33,11 +30,20 @@ public class DocLdaActor {
 
     public static void main(String[] args) {
 
+//        actor();
 //        watchActor();
-        actor();
+          lateWorkActor();
 
+//
 //        long categoryId = 75061316;
 //        initalPath(categoryId);
+//
+//        Map<Long, Number> map = FileSteward.mergTopic2WareId(da_model_path, wkbt_file);
+//        PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
+
+//        Map<Long, Number> map = FileSteward.mergTopic2WareId(da_model_path, wkbt_file);
+//        PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
+
 //        lateWorkActor();
     }
 
@@ -100,25 +106,75 @@ public class DocLdaActor {
 
     // topN term in current leaf_cate and topic
     public static void lateWorkActor() {
+        long categoryId = 75061316;
+        initalPath(categoryId);
+
         LateWork lateWork = new LateWork(ori_vs_cur_file);
 
-//        long cateId = 75061333;
-//        long topicId = 26;
-//        lateWork.getPopularTerms(cateId, topicId);
-
-
-        List<Long> wareIdList = new ArrayList<Long>() {{
-            add(50029405L);
-            add(50024953L);
-            add(679578L);
+        List<long[]> list = new ArrayList<long[]>() {{
+            add(new long[]{75061340, 20});
+            add(new long[]{75061340, 68});
+//            add(new long[]{75061333, 16});
+//            add(new long[]{75061333, 17});
+//            add(new long[]{75061333, 26});
+//            add(new long[]{75061333, 27});
+//            add(new long[]{75061333, 28});
+//            add(new long[]{75061333, 31});
+//            add(new long[]{75061333, 32});
+//            add(new long[]{75061333, 34});
+//            add(new long[]{75061333, 39});
+//            add(new long[]{75061333, 40});
+//            add(new long[]{75061333, 42});
+//            add(new long[]{75061333, 43});
+//            add(new long[]{75061333, 46});
+//            add(new long[]{75061333, 47});
+//            add(new long[]{75061333, 48});
+//            add(new long[]{75061333, 51});
+//            add(new long[]{75061333, 54});
+//            add(new long[]{75061333, 56});
+//            add(new long[]{75061333, 61});
+//            add(new long[]{75061333, 65});
+//            add(new long[]{75061333, 75});
+//            add(new long[]{75061333, 79});
+//            add(new long[]{75061333, 80});
+//            add(new long[]{75061333, 82});
+//            add(new long[]{75061333, 84});
+//            add(new long[]{75061333, 88});
+//            add(new long[]{75061333, 89});
+//            add(new long[]{75061333, 94});
+//            add(new long[]{75061333, 96});
+//            add(new long[]{75061333, 97});
+//            add(new long[]{75061333, 98});
         }};
 
+//        /*
+        for (long[] array : list) {
+            System.out.println("\n### cateId is: " + array[0] + " , topicId is: " + array[1]);
+            lateWork.getPopularTerms(array[0], array[1]);
+        }
+//        */
+
+        List<Long> wareIdList = new ArrayList<Long>() {{
+            add(50004531L);
+            add(699399L);
+            add(694780L);
+            add(694787L);
+            add(688456L);
+        }};
+
+        /*
         for (long wareId : wareIdList) {
             System.out.println("\n### wareId is: " + wareId);
             lateWork.getWareIndexComment(wareId);
         }
+        */
+    }
 
-
-
+    // put piece together
+    public static void putTogether() {
+        long categoryId = 75061316;
+        initalPath(categoryId);
+        MergeSteward mergeSteward = new MergeSteward(ori_vs_cur_file);
+        mergeSteward.maidCaptain();
     }
 }

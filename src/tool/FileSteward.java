@@ -219,6 +219,52 @@ public class FileSteward {
         }
     }
 
+    public static List<CellCluster> getCellClusterList(String path) {
+        List<CellCluster> cellList = new ArrayList<>();
+
+        FileInputStream fis = null;
+        InputStreamReader isr = null;
+        BufferedReader br = null;
+        try {
+            String str = "";
+            String[] eles;
+            CellCluster cellCluster;
+            fis = new FileInputStream(path);
+            // 从文件系统中的某个文件中获取字节
+            isr = new InputStreamReader(fis);// InputStreamReader 是字节流通向字符流的桥梁,
+            br = new BufferedReader(isr);// 从字符输入流中读取文件中的内容,封装了一个new InputStreamReader的对象
+            int i = 0;
+            while ((str = br.readLine()) != null) {
+                if ("".equals(str.trim())) {
+                    continue;
+                }
+                cellCluster = new CellCluster();
+                eles = str.split("\t");
+                cellCluster.setId(i++);
+                cellCluster.setSize(Integer.parseInt(eles[0]));
+                cellCluster.setCateSize(Integer.parseInt(eles[1]));
+                cellCluster.setTopicSize(Integer.parseInt(eles[2]));
+                cellCluster.setLeafCateId(Long.parseLong(eles[3]));
+                cellCluster.setTopicId(Integer.parseInt(eles[4]));
+                cellCluster.setCatePercent(Double.parseDouble(eles[5]));
+                cellCluster.setTopicPercent(Double.parseDouble(eles[6]));
+                cellList.add(cellCluster);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+            try {
+                br.close();
+                isr.close();
+                fis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return cellList;
+        }
+    }
+
     public static Map<Integer, Map<Integer, Integer>> getCountIndexMap(String path) {
         Map<Integer, Map<Integer, Integer>> map = new HashMap<>();
 

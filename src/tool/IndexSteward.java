@@ -183,6 +183,7 @@ public class IndexSteward {
         for (String keyword : translateSet) {
             for (String ele : keyword.split(" ")) {
                 if (ele.equals("and") ||
+                        ele.equals("with") ||
                         ele.equals("of") ||
                         ele.equals("in") ||
                         ele.equals("for") ||
@@ -316,8 +317,8 @@ public class IndexSteward {
     }
 
     public static void main(String[] args) {
-        String bags = "bags";
-        String[] arrays = "ploybags".split(bags);
+        String keyword = "bags";
+        String[] arrays = keyword.split(" ");
         System.out.println(arrays[0]);
     }
 }

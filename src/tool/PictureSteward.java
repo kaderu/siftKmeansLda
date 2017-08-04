@@ -86,11 +86,13 @@ public class PictureSteward {
                 String newFileName = "";
                 String[] elements = oriFile.getName().split("\\_|\\.");
                 if (elements.length == 3) {
-                    newFileName = map.get(Long.parseLong(elements[1])) + "_" + elements[1] + "." + elements[2];
+                    newFileName = map.get(Long.parseLong(elements[1]))
+                            + "_"+ elements[0] // leafcate_topid_wareId.jpg
+                            + "_" + elements[1] + "." + elements[2];
                 } else if (elements.length == 2) {
                     newFileName = map.get(Long.parseLong(elements[0])) + "_" + elements[0] + "." + elements[1];
                 } else {
-                    continue;
+//                    newFileName = elements[1] + "_" + elements[2] + "." + elements[3];
                 }
                 File newFile = new File(path + "\\" + newFileName);
                 oriFile.renameTo(newFile);
