@@ -24,6 +24,8 @@ public class WareMsg {
 
     private long cateId;
 
+
+
     public long getWareId() {
         return wareId;
     }
@@ -135,6 +137,8 @@ public class WareMsg {
         for (String color : colorSet) {
             if (title.indexOf(" " + color + " ") != -1) {
                 title = title.replace(" " + color + " ", " ");
+            } else if (title.indexOf("-" + color + " ") != -1) {
+                title = title.replace("-" + color + " ", " ");
             }
         }
 

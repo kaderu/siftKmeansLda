@@ -34,7 +34,10 @@ public class DocLdaActor {
 //        watchActor();
           lateWorkActor();
 
-//
+//          merge();
+
+//        watchMergeCellActor();
+
 //        long categoryId = 75061316;
 //        initalPath(categoryId);
 //
@@ -89,6 +92,14 @@ public class DocLdaActor {
         initalPath(categoryId);
         Map<Long, Number> map = FileSteward.mergLeafCate2WareId(wkbt_file);
         PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
+    }
+
+    public static void watchMergeCellActor() {
+        long categoryId = 75061316;
+        initalPath(categoryId);
+//        Map<String, Integer> map = FileSteward.getMergeCellMap(wkbt_file.replace("wkbt.txt", "mergeCateCell.txt"));
+        Map<String, Integer> map = FileSteward.getMergeCellMap(wkbt_file.replace("wkbt.txt", "mergeCateCell.txt"), "topic");
+        PictureSteward.picturesRenameMergeCell(prefix_path + "pic_" + categoryId, map);
     }
 
     public static void initalPath(long categoryId) {
@@ -147,34 +158,38 @@ public class DocLdaActor {
 //            add(new long[]{75061333, 98});
         }};
 
-//        /*
+        /*
         for (long[] array : list) {
             System.out.println("\n### cateId is: " + array[0] + " , topicId is: " + array[1]);
             lateWork.getPopularTerms(array[0], array[1]);
         }
-//        */
+        */
+
+
+
 
         List<Long> wareIdList = new ArrayList<Long>() {{
-            add(50004531L);
-            add(699399L);
-            add(694780L);
-            add(694787L);
-            add(688456L);
+            add(50000104L);
+            add(50000105L);
+//            add(694780L);
+//            add(694787L);
+//            add(688456L);
         }};
 
-        /*
+//        /*
         for (long wareId : wareIdList) {
             System.out.println("\n### wareId is: " + wareId);
             lateWork.getWareIndexComment(wareId);
         }
-        */
+//        */
     }
 
     // put piece together
-    public static void putTogether() {
+    public static void merge() {
         long categoryId = 75061316;
         initalPath(categoryId);
         MergeSteward mergeSteward = new MergeSteward(ori_vs_cur_file);
-        mergeSteward.maidCaptain();
+//        mergeSteward.maidCaptain("topic");
+        mergeSteward.maidCaptain("cate");
     }
 }

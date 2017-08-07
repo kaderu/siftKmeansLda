@@ -8,6 +8,7 @@ public class Ware4LateWork {
     private long wareId;
     private long leafCateId;
     private long topicId;
+    private long mergeTopicId;
 
     public long getWareId() {
         return wareId;
@@ -31,5 +32,13 @@ public class Ware4LateWork {
 
     public void setTopicId(long topicId) {
         this.topicId = topicId;
+    }
+
+    public long getMergeTopicId() {
+        return mergeTopicId;
+    }
+
+    public void setMergeTopicId(long mergeTopicId) {
+        this.mergeTopicId = mergeTopicId;
     }
 }

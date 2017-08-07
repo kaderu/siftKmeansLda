@@ -219,6 +219,48 @@ public class FileSteward {
         }
     }
 
+    public static Map<String, Integer> getMergeCellMap(String path, String column) {
+        Map<String, Integer> map = new HashMap<>();
+
+        FileInputStream fis = null;
+        InputStreamReader isr = null;
+        BufferedReader br = null; //用于包装InputStreamReader,提高处理性能。因为BufferedReader有缓冲的，而InputStreamReader没有。
+        try {
+            String str = "";
+            String[] eles;
+            String cateAndTopic;
+            fis = new FileInputStream(path);
+            // 从文件系统中的某个文件中获取字节
+            isr = new InputStreamReader(fis);// InputStreamReader 是字节流通向字符流的桥梁,
+            br = new BufferedReader(isr);// 从字符输入流中读取文件中的内容,封装了一个new InputStreamReader的对象
+            while ((str = br.readLine()) != null) {
+                if ("".equals(str.trim())) {
+                    continue;
+                }
+                eles = str.split("\t");
+                cateAndTopic = eles[0] + "_" + eles[1];
+                if ("cate".equals(column)) {
+                    map.put(cateAndTopic, Integer.parseInt(eles[2]));
+                } else if ("topic".equals(column)) {
+                    map.put(cateAndTopic, Integer.parseInt(eles[3]));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+            try {
+                br.close();
+                isr.close();
+                fis.close();
+                // 关闭的时候最好按照先后顺序关闭最后开的先关闭所以先关s,再关n,最后关m
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return map;
+        }
+    }
+
     public static List<CellCluster> getCellClusterList(String path) {
         List<CellCluster> cellList = new ArrayList<>();
 
@@ -240,7 +282,7 @@ public class FileSteward {
                 }
                 cellCluster = new CellCluster();
                 eles = str.split("\t");
-                cellCluster.setId(i++);
+                cellCluster.setId(++i);
                 cellCluster.setSize(Integer.parseInt(eles[0]));
                 cellCluster.setCateSize(Integer.parseInt(eles[1]));
                 cellCluster.setTopicSize(Integer.parseInt(eles[2]));

@@ -100,6 +100,32 @@ public class PictureSteward {
         }
     }
 
+    public static void picturesRenameMergeCell(String path, Map<String, Integer> map) {
+        File file = new File(path);
+        File [] files = file.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            File oriFile = files[i];
+            String oriFileName = oriFile.getName();   //根据后缀判断
+            if (oriFileName.endsWith(".jpg")) {
+                String newFileName = "";
+                String[] elements = oriFile.getName().split("\\_");
+                if (elements.length == 3) {
+                    newFileName = map.get(elements[0] + "_" + elements[1])
+                            + "_"+ elements[0]
+                            + "_" + elements[1]
+                            + "_" + elements[2];
+                } else if (elements.length == 4) {
+                    newFileName = map.get(elements[1] + "_" + elements[2])
+                            + "_"+ elements[1]
+                            + "_" + elements[2]
+                            + "_" + elements[3];
+                }
+                File newFile = new File(path + "\\" + newFileName);
+                oriFile.renameTo(newFile);
+            }
+        }
+    }
+
 
     public static void picturesRename(String path) {
         File file = new File(path);
