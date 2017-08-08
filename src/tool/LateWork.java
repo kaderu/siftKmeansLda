@@ -46,10 +46,10 @@ public class LateWork {
                 }
             }
         }
-        return termCountMap;
+
 
         // output
-        /*
+//        /*
         List<Map.Entry<Integer, Integer>> infoIds = new ArrayList<>(termCountMap.entrySet());
         Collections.sort(infoIds, new Comparator<Map.Entry<Integer, Integer>>() {
             public int compare(Map.Entry<Integer, Integer> o1, Map.Entry<Integer, Integer> o2) {
@@ -65,7 +65,9 @@ public class LateWork {
             }
             count++;
         }
-        */
+//        */
+
+        return termCountMap;
     }
 
     public Map<Integer, Integer> getWareIndexComment(long wareId) {

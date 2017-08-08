@@ -92,7 +92,8 @@ public class PictureSteward {
                 } else if (elements.length == 2) {
                     newFileName = map.get(Long.parseLong(elements[0])) + "_" + elements[0] + "." + elements[1];
                 } else {
-//                    newFileName = elements[1] + "_" + elements[2] + "." + elements[3];
+                    int size = elements.length;
+                    newFileName = map.get(Long.parseLong(elements[size - 2])) + "_" + elements[size - 2] + "." + elements[size - 1];
                 }
                 File newFile = new File(path + "\\" + newFileName);
                 oriFile.renameTo(newFile);

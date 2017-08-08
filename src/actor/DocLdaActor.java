@@ -30,13 +30,13 @@ public class DocLdaActor {
 
     public static void main(String[] args) {
 
-//        actor();
+//          actor();
 //        watchActor();
           lateWorkActor();
 
 //          merge();
 
-//        watchMergeCellActor();
+//          watchMergeCellActor();
 
 //        long categoryId = 75061316;
 //        initalPath(categoryId);
@@ -98,7 +98,7 @@ public class DocLdaActor {
         long categoryId = 75061316;
         initalPath(categoryId);
 //        Map<String, Integer> map = FileSteward.getMergeCellMap(wkbt_file.replace("wkbt.txt", "mergeCateCell.txt"));
-        Map<String, Integer> map = FileSteward.getMergeCellMap(wkbt_file.replace("wkbt.txt", "mergeCateCell.txt"), "topic");
+        Map<String, Integer> map = FileSteward.getMergeCellMap(wkbt_file.replace("wkbt.txt", "mergeCateCell.txt"), "cate");
         PictureSteward.picturesRenameMergeCell(prefix_path + "pic_" + categoryId, map);
     }
 
@@ -123,10 +123,10 @@ public class DocLdaActor {
         LateWork lateWork = new LateWork(ori_vs_cur_file);
 
         List<long[]> list = new ArrayList<long[]>() {{
-            add(new long[]{75061340, 20});
-            add(new long[]{75061340, 68});
-//            add(new long[]{75061333, 16});
-//            add(new long[]{75061333, 17});
+            add(new long[]{75061322, 131});
+            add(new long[]{75061322, 135});
+            add(new long[]{75061322, 297});
+//            add(new long[]{75061319, 240});
 //            add(new long[]{75061333, 26});
 //            add(new long[]{75061333, 27});
 //            add(new long[]{75061333, 28});
@@ -166,13 +166,13 @@ public class DocLdaActor {
         */
 
 
-
-
         List<Long> wareIdList = new ArrayList<Long>() {{
-            add(50000104L);
-            add(50000105L);
-//            add(694780L);
-//            add(694787L);
+            add(680035L);
+            add(680090L);
+            add(680099L);
+            add(698451L);
+            add(698457L);
+            add(50005287L);
 //            add(688456L);
         }};
 
@@ -189,7 +189,7 @@ public class DocLdaActor {
         long categoryId = 75061316;
         initalPath(categoryId);
         MergeSteward mergeSteward = new MergeSteward(ori_vs_cur_file);
-//        mergeSteward.maidCaptain("topic");
-        mergeSteward.maidCaptain("cate");
+        mergeSteward.maidCaptain("topic");
+//        mergeSteward.maidCaptain("cate");
     }
 }

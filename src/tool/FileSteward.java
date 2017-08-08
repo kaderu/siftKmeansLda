@@ -240,9 +240,9 @@ public class FileSteward {
                 eles = str.split("\t");
                 cateAndTopic = eles[0] + "_" + eles[1];
                 if ("cate".equals(column)) {
-                    map.put(cateAndTopic, Integer.parseInt(eles[2]));
+                    map.put(cateAndTopic, Integer.parseInt(eles[2]) == 0 ? 999 : Integer.parseInt(eles[2]));
                 } else if ("topic".equals(column)) {
-                    map.put(cateAndTopic, Integer.parseInt(eles[3]));
+                    map.put(cateAndTopic, Integer.parseInt(eles[3]) == 0 ? 999 : Integer.parseInt(eles[3]));
                 }
             }
         } catch (Exception e) {
