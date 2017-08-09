@@ -23,12 +23,12 @@ public class PictureSteward {
         // rename all picture 2 orignal
         picturesRename(DocLdaActor.prefix_path + "pic_" + categoryId);
 
-        List<WareMsg> wareMsgList = FileSteward.getWareMsgList(DocLdaActor.wkbt_file);
+        List<WareMsgConventor> wareMsgList = FileSteward.getWareMsgList(DocLdaActor.wkbt_file);
         System.out.println("Begin picture download, wareMsgList size is " + wareMsgList.size());
         String url = "";
         String path = "";
         int i = 0;
-        for (WareMsg wareMsg : wareMsgList) {
+        for (WareMsgConventor wareMsg : wareMsgList) {
             url = picture_prefix_path + wareMsg.getImgUri();
             path = DocLdaActor.prefix_path + "pic_" + categoryId + "\\" + wareMsg.getWareId() + ".jpg";
 
@@ -87,7 +87,7 @@ public class PictureSteward {
                 String[] elements = oriFile.getName().split("\\_|\\.");
                 if (elements.length == 3) {
                     newFileName = map.get(Long.parseLong(elements[1]))
-                            + "_"+ elements[0] // leafcate_topid_wareId.jpg
+//                            + "_"+ elements[0] // leafcate_topid_wareId.jpg
                             + "_" + elements[1] + "." + elements[2];
                 } else if (elements.length == 2) {
                     newFileName = map.get(Long.parseLong(elements[0])) + "_" + elements[0] + "." + elements[1];

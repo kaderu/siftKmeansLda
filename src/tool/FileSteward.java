@@ -1,5 +1,8 @@
 package tool;
 
+import actor.DocLdaActor;
+import actor.KmeansActor;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -44,8 +47,6 @@ public class FileSteward {
         BufferedReader br = null;
         try {
             String str = "";
-            String[] eles;
-            WareMsg wareMsg;
             fis = new FileInputStream("color.dic");
             isr = new InputStreamReader(fis);// InputStreamReader 是字节流通向字符流的桥梁,
             br = new BufferedReader(isr);// 从字符输入流中读取文件中的内容,封装了一个new InputStreamReader的对象
@@ -68,6 +69,39 @@ public class FileSteward {
                 e.printStackTrace();
             }
             this.colorSet = colorSet;
+        }
+    }
+
+    public static Set<String> getBlockSet() {
+        Set<String> set = new HashSet<>();
+
+        FileInputStream fis = null;
+        InputStreamReader isr = null;
+        BufferedReader br = null;
+        try {
+            String str = "";
+            fis = new FileInputStream("color.dic");
+            isr = new InputStreamReader(fis);// InputStreamReader 是字节流通向字符流的桥梁,
+            br = new BufferedReader(isr);// 从字符输入流中读取文件中的内容,封装了一个new InputStreamReader的对象
+            while ((str = br.readLine()) != null) {
+                if ("".equals(str.trim())) {
+                    continue;
+                }
+                set.add(str.trim());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+            try {
+                br.close();
+                isr.close();
+                fis.close();
+                // 关闭的时候最好按照先后顺序关闭最后开的先关闭所以先关s,再关n,最后关m
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return set;
         }
     }
 
@@ -131,8 +165,8 @@ public class FileSteward {
         }
     }
 
-    public static List<WareMsg> getWareMsgList(String path) {
-        List<WareMsg> wareMsgList = new ArrayList<>();
+    public static List<WareMsgConventor> getWareMsgList(String path) {
+        List<WareMsgConventor> wareMsgList = new ArrayList<>();
 
         FileInputStream fis = null;
         InputStreamReader isr = null;
@@ -161,7 +195,7 @@ public class FileSteward {
                 if (eles.length >= 6) {
                     wareMsg.setCateId(Long.parseLong(eles[5]));
                 }
-                wareMsgList.add(wareMsg);
+                wareMsgList.add(new WareMsgConventor(wareMsg));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -481,8 +515,7 @@ public class FileSteward {
         return flag;
     }
 
-    public static Map<Long, Number> mergTopic2WareId(String gammaPath, String wkbtPath) {
-        List<WareMsg> wareMsgList = getWareMsgList(wkbtPath);
+    public static String getTargGammaFilePath(String gammaPath) {
         File gammaFiles = new File(gammaPath);
         File[] gammas = gammaFiles.listFiles();
         int index = 0;
@@ -497,7 +530,13 @@ public class FileSteward {
                 maxIndex = file.getName().split("\\.")[0];
             }
         }
-        String leastFilePath = gammaPath + "\\" + maxIndex + ".gamma";
+        return gammaPath + "\\" + maxIndex + ".gamma";
+
+    }
+
+    public static Map<Long, Number> mergTopic2WareId(String gammaPath, String wkbtPath) {
+        List<WareMsgConventor> wareMsgList = getWareMsgList(wkbtPath);
+        String leastFilePath =  getTargGammaFilePath(gammaPath);
 
         List<Integer> topicIdList = new ArrayList<>();
         FileInputStream fis = null;
@@ -538,9 +577,9 @@ public class FileSteward {
     }
 
     public static Map<Long, Number> mergLeafCate2WareId(String wkbtPath) {
-        List<WareMsg> wareMsgList = getWareMsgList(wkbtPath);
+        List<WareMsgConventor> wareMsgList = getWareMsgList(wkbtPath);
         Map<Long, Number> map = new TreeMap<>();
-        for (WareMsg ele : wareMsgList) {
+        for (WareMsgConventor ele : wareMsgList) {
             map.put(ele.getWareId(), ele.getCateId());
         }
         return map;
@@ -666,6 +705,71 @@ public class FileSteward {
 
     public Set<String> getColorSet() {
         return colorSet;
+    }
+
+    public static List<double[]> getKmeansKernelList(String path) {
+        List<double[]> kernelList = new ArrayList<>();
+        for (int i = 0; i < KmeansActor.clusterNum; i++) {
+            kernelList.add(new double[DocLdaActor.clusterNum]);
+        }
+        FileInputStream fis = null;
+        InputStreamReader isr = null;
+        BufferedReader br = null;
+        try {
+            String str = "";
+            String[] eles;
+            fis = new FileInputStream(path);
+            isr = new InputStreamReader(fis);
+            br = new BufferedReader(isr);
+            while ((str = br.readLine()) != null) {
+                if ("".equals(str.trim())) {
+                    continue;
+                }
+                eles = str.split("\\s+");
+                for (int i = 0; i < KmeansActor.clusterNum; i++) {
+                    kernelList.get(i)[Integer.parseInt(eles[0]) - 1] = Double.parseDouble(eles[i + 2]);
+                }
+            }
+            br.close();
+            isr.close();
+            fis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return kernelList;
+    }
+
+    public static List<double[]> getGammaTopicSimlarList(String path) {
+        List<double[]> gammaList = new ArrayList<>();
+        FileInputStream fis = null;
+        InputStreamReader isr = null;
+        BufferedReader br = null;
+        try {
+            String str = "";
+            String[] eles;
+            double[] gammaArray;
+            fis = new FileInputStream(path);
+            isr = new InputStreamReader(fis);
+            br = new BufferedReader(isr);
+            while ((str = br.readLine()) != null) {
+                if ("".equals(str.trim()) ||
+                        str.startsWith("@")) {
+                    continue;
+                }
+                eles = str.split("\\s+");
+                gammaArray = new double[DocLdaActor.clusterNum];
+                for (int i = 0; i < DocLdaActor.clusterNum; i++) {
+                    gammaArray[i] = Double.parseDouble(eles[i]);
+                }
+                gammaList.add(gammaArray);
+            }
+            br.close();
+            isr.close();
+            fis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return gammaList;
     }
 
     public static void main(String[] args) {

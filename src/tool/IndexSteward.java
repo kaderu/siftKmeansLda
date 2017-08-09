@@ -18,16 +18,17 @@ public class IndexSteward {
     }
 
     public static void index(String docPath, String dictFilePath, String indexFilePath) {
-        List<WareMsg> wareMsgList = FileSteward.getWareMsgList(docPath);
+        List<WareMsgConventor> wareMsgList = FileSteward.getWareMsgList(docPath);
 //        indexMaker(wareMsgList, dictFilePath, indexFilePath);
-        kbtIndexMaker(wareMsgList, dictFilePath, indexFilePath);
+        MultiLayerIndexMap dictMap = kbtIndexMaker(wareMsgList, dictFilePath);
+        ldaInputMaker(wareMsgList, dictMap, indexFilePath);
     }
 
-    public static void indexMaker(List<WareMsg> wareMsgList, String dictFilePath, String indexFilePath) {
+    public static void indexMaker(List<WareMsgConventor> wareMsgList, String dictFilePath, String indexFilePath) {
         // make dict
         Map<Set<String>, Integer> dicSetMap = new HashMap<>();
         Set<String> dictSet = new TreeSet<>();
-        for (WareMsg wareMsg : wareMsgList) {
+        for (WareMsgConventor wareMsg : wareMsgList) {
             String[] array = wareMsg.getKeywords();
             dictSet.addAll(new ArrayList<>(Arrays.asList(array)));
         }
@@ -37,7 +38,7 @@ public class IndexSteward {
         // make index map
         List<Map<Integer, Integer>> mapList = new ArrayList<>();
         Map<Integer, Integer> map;
-        for (WareMsg wareMsg : wareMsgList) {
+        for (WareMsgConventor wareMsg : wareMsgList) {
             map = new HashMap<>();
             for (String keyword : wareMsg.getKeywords()) { // [mother care, baby bath, baby clean]
                 List<Integer> wordIndexList = dicMap.get(keyword);
@@ -55,13 +56,13 @@ public class IndexSteward {
     }
 
     // merge keyword, brandName and title
-    public static void kbtIndexMaker(List<WareMsg> wareMsgList, String dictFilePath, String indexFilePath) {
+    public static MultiLayerIndexMap kbtIndexMaker(List<WareMsgConventor> wareMsgList, String dictFilePath) {
         // make dictMap
         Map<Set<String>, Integer> dicSetMap = new HashMap<>();
         Set<String> dictKeywordSet = new TreeSet<>();
         Set<String> dictBrandNameSet = new TreeSet<>();
         Set<String> dictTitleSet = new TreeSet<>();
-        for (WareMsg wareMsg : wareMsgList) {
+        for (WareMsgConventor wareMsg : wareMsgList) {
             String[] array = wareMsg.getKeywords();
             dictKeywordSet.addAll(new ArrayList<>(Arrays.asList(array)));
             String branName = wareMsg.getBrandName();
@@ -75,10 +76,14 @@ public class IndexSteward {
 
         MultiLayerIndexMap dicMap = dicTranslateDealer(dicSetMap, advance_keyword_translate);
         dicMap.store(dictFilePath);
+        return dicMap;
+    }
+
+    public static void ldaInputMaker(List<WareMsgConventor> wareMsgList, MultiLayerIndexMap dicMap, String indexFilePath) {
         // make index map
         List<Map<Integer, Integer>> mapList = new ArrayList<>();
         Map<Integer, Integer> map;
-        for (WareMsg wareMsg : wareMsgList) {
+        for (WareMsgConventor wareMsg : wareMsgList) {
             map = new HashMap<>();
             String[] keywordsArray = wareMsg.getKeywords();
             String brandName = wareMsg.getBrandName();
@@ -181,6 +186,15 @@ public class IndexSteward {
         int kernelCnt = 0;
         // calculate each kernel word weight
         for (String keyword : translateSet) {
+            if (keyword.indexOf(" ") != -1){ // do not deal keywords with several terms
+                if (!popularCellWordCntMap.containsKey(keyword)) {
+                    popularCellWordCntMap.put(keyword, 1);
+                } else {
+                    popularCellWordCntMap.put(keyword, popularCellWordCntMap.get(keyword) + 1);
+                }
+                kernelCnt++;
+            }
+            /*
             for (String ele : keyword.split(" ")) {
                 if (ele.equals("and") ||
                         ele.equals("with") ||
@@ -197,6 +211,7 @@ public class IndexSteward {
                 }
                 kernelCnt++;
             }
+            */
         }
         double meanCnt = kernelCnt * 1.0 / popularCellWordCntMap.size();
         Iterator it = popularCellWordCntMap.keySet().iterator();
@@ -223,6 +238,15 @@ public class IndexSteward {
         for (String keyword : translateSet) {
             map.put(keyword, i++);
         }
+
+        // step4EX. map blocker from a new game plus
+//        int i = 0;
+//        Set<String> blockSet = FileSteward.getBlockSet();
+//        for (String keyword : translateSet) {
+//            if (blockSet.contains(keyword)) {
+//                map.put(keyword, i++);
+//            }
+//        }
 
         return new MultiLayerIndexMap(ori2ExtendMap, map);
     }

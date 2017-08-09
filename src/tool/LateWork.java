@@ -97,6 +97,10 @@ public class LateWork {
         return termCountMap;
     }
 
+    public List<Ware4LateWork> getWareList() {
+        return wareList;
+    }
+
     public static void main(String[] args) {
 
     }

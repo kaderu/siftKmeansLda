@@ -4,6 +4,7 @@ import org.knowceans.lda.LdaEstimate;
 import tool.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,7 +20,7 @@ public class DocLdaActor {
     public static final String lda_model_path_name = "wkbtLda.model";
     public static final String ori_vs_cur_file_name = "oriVsCur.txt";
 
-    public static final int clusterNum = 300;
+    public static final int clusterNum = 50;
 
     public static String wkbt_file;
     public static String wkbt_dict_file;
@@ -31,15 +32,19 @@ public class DocLdaActor {
     public static void main(String[] args) {
 
 //          actor();
-//        watchActor();
-          lateWorkActor();
+        watchActor();
+//          lateWorkActor();
 
 //          merge();
 
 //          watchMergeCellActor();
 
+//        kmeansWatchActor();
+
 //        long categoryId = 75061316;
 //        initalPath(categoryId);
+//
+//        ldaPlusKmeans();
 //
 //        Map<Long, Number> map = FileSteward.mergTopic2WareId(da_model_path, wkbt_file);
 //        PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
@@ -93,6 +98,20 @@ public class DocLdaActor {
         Map<Long, Number> map = FileSteward.mergLeafCate2WareId(wkbt_file);
         PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
     }
+
+    // watcher for kmeans, before which we'd replace topic_id with kmeans_cluster_id
+    public static void kmeansWatchActor() {
+        long categoryId = 75061316;
+        initalPath(categoryId);
+        LateWork lateWork = new LateWork(ori_vs_cur_file);
+        List<Ware4LateWork> wareList = lateWork.getWareList();
+        Map<Long, Number> map = new HashMap<>();
+        for (Ware4LateWork ware : wareList) {
+            map.put(ware.getWareId(), ware.getTopicId());
+        }
+        PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
+    }
+
 
     public static void watchMergeCellActor() {
         long categoryId = 75061316;
@@ -191,5 +210,39 @@ public class DocLdaActor {
         MergeSteward mergeSteward = new MergeSteward(ori_vs_cur_file);
         mergeSteward.maidCaptain("topic");
 //        mergeSteward.maidCaptain("cate");
+    }
+
+    public static void ldaPlusKmeans() {
+        List<double[]> kernelList = FileSteward.getKmeansKernelList(wkbt_file.replace("wkbt.txt", "kmeansKernel.txt"));
+        List<double[]> gammaList = FileSteward.getGammaTopicSimlarList(FileSteward.getTargGammaFilePath(da_model_path));
+        for (double[] gammaArray : gammaList) {
+            System.out.println(tellClusterId(gammaArray, kernelList));
+        }
+    }
+
+    private static int tellClusterId(double[] gammaArray, List<double[]> kernelList) {
+        double distance = 0;
+        int index = 0;
+        for (int i = 0; i < kernelList.size(); i++) {
+            double curDistance = getDistance(gammaArray, kernelList.get(i));
+            if (distance > curDistance ||
+                    distance == 0) {
+                distance = curDistance;
+                index = i;
+            }
+        }
+        return index;
+    }
+
+    private static double getDistance(double[] gammaArray, double[] kernelArray) {
+        if (gammaArray.length != kernelArray.length) {
+            return 0;
+        } else {
+            double distance = 0;
+            for (int i = 0; i < gammaArray.length; i++) {
+                distance += (gammaArray[i] - kernelArray[i]) * (gammaArray[i] - kernelArray[i]);
+            }
+            return distance;
+        }
     }
 }
