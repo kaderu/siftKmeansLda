@@ -70,7 +70,7 @@ public class IndexSteward {
             String[] titleCells = wareMsg.getTitleCells();
             dictTitleSet.addAll(new ArrayList<>(Arrays.asList(titleCells)));
         }
-        dicSetMap.put(dictKeywordSet, 2);
+        dicSetMap.put(dictKeywordSet, 10 + 2); // we should tell keyword from others
         dicSetMap.put(dictBrandNameSet, 0);
         dicSetMap.put(dictTitleSet, 1);
 
@@ -88,13 +88,16 @@ public class IndexSteward {
             String[] keywordsArray = wareMsg.getKeywords();
             String brandName = wareMsg.getBrandName();
             String[] titleCells = wareMsg.getTitleCells();
-            String[] totalArray = concatAll(keywordsArray, new String[]{brandName}, titleCells);
+            String[] totalArray = concatAll(keywordsArray,
+//                    new String[]{brandName},
+                    titleCells);
 
             for (String cell : totalArray) {
                 if (cell == null ||
                         cell.trim().equals("")) {
                     continue;
                 }
+//                System.out.println(cell);
                 List<Integer> wordIndexList = dicMap.get(cell);
                 // may we wanna give keyword phrase a bigger weight
                 for (int wordIndex : wordIndexList) {
@@ -148,7 +151,7 @@ public class IndexSteward {
     }
 
     public static MultiLayerIndexMap dicTranslateMethodAdvanceKeywordTranslate(Map<Set<String>, Integer> dicSetMap) {
-        Set<String> translateSet = new HashSet<>(); // set to collect cell word and make index
+        Map<String, Integer> translateSetMap = new HashMap<>(); // set to collect cell word and make index
         Map<String, List<String>> ori2ExtendMap = new HashMap<>(); // map reflect every oriword to a list of cell word (after translate)
         Map<String, Integer> map = new HashMap<>();
 
@@ -163,17 +166,25 @@ public class IndexSteward {
                     continue;
                 }
                 if (entry.getValue() > 0) {
-                    uniformWord = getUniformWord(word, fileSteward, dictMap);
+                    if (entry.getValue() / 10 > 0) { // then we know it's a keyword, we put translate in keyword_translate.dic
+                        uniformWord = getUniformWord4Keyword(word, fileSteward, dictMap);
+                    } else { // formally put in translate.dic
+                        uniformWord = getUniformWord(word, fileSteward, dictMap);
+                    }
                     System.out.println("###### translate the " + index++ + "th term finished ..." );
                 } else {
                     System.out.println("###### need not translate ..." );
                     uniformWord = word.toLowerCase();
                 }
-                translateSet.add(uniformWord);
+                if (!translateSetMap.containsKey(uniformWord)) {
+                    translateSetMap.put(uniformWord, 1);
+                } else {
+                    translateSetMap.put(uniformWord, translateSetMap.get(uniformWord) + 1);
+                }
                 final String uniformWordTmp = uniformWord;
                 List<String> ori2ExtendList =new ArrayList<String>();
                 ori2ExtendList.add(uniformWordTmp);
-                if (entry.getValue() > 1) { // increase size of ori2ExtendList
+                if (entry.getValue() % 10 > 1) { // increase size of ori2ExtendList
                     ori2ExtendList.add("");
                 }
                 ori2ExtendMap.put(word, ori2ExtendList);
@@ -185,14 +196,10 @@ public class IndexSteward {
         Map<String, Integer> popularCellWordCntMap = new HashMap<>(); // map keep popular cell word (single)
         int kernelCnt = 0;
         // calculate each kernel word weight
-        for (String keyword : translateSet) {
-            if (keyword.indexOf(" ") != -1){ // do not deal keywords with several terms
-                if (!popularCellWordCntMap.containsKey(keyword)) {
-                    popularCellWordCntMap.put(keyword, 1);
-                } else {
-                    popularCellWordCntMap.put(keyword, popularCellWordCntMap.get(keyword) + 1);
-                }
-                kernelCnt++;
+        for (String keyword : translateSetMap.keySet()) {
+            if (keyword.indexOf(" ") == -1){ // do not deal keywords with several terms
+                popularCellWordCntMap.put(keyword, translateSetMap.get(keyword));
+                kernelCnt += translateSetMap.get(keyword);
             }
             /*
             for (String ele : keyword.split(" ")) {
@@ -229,13 +236,15 @@ public class IndexSteward {
                 entry.getValue().remove(1);
                 List<String> popularCellWordList = getHideKernelWord(popularCellWordCntMap.keySet(), entry.getValue().get(0));
                 entry.getValue().addAll(popularCellWordList);
-                translateSet.addAll(popularCellWordList);
+                for (String cell : popularCellWordList) {
+                    translateSetMap.put(cell, 1);
+                }
             }
         }
 
         // step4. make index map
         int i = 0;
-        for (String keyword : translateSet) {
+        for (String keyword : translateSetMap.keySet()) {
             map.put(keyword, i++);
         }
 
@@ -270,6 +279,30 @@ public class IndexSteward {
             } else { // add to dictMap and increase_map, later store increasement to file
                 dictMap.put(word, uniformWord);
                 fileSteward.getAddDictMap().put(word, uniformWord);
+            }
+        }
+        return uniformWord;
+    }
+
+    public static String getUniformWord4Keyword(String word, FileSteward fileSteward, Map<String, String> dictMap) {
+        String uniformWord;
+        if (dictMap.containsKey(word)) { // get dict from cache
+            uniformWord = dictMap.get(word);
+        } else {  // get from google.com
+            uniformWord = "";
+            int i = 0;
+            while (i < 3 && uniformWord.isEmpty()) {
+                try {
+                    uniformWord = TranslateUtil.id2en(word.replaceAll("[-]"," ")).toLowerCase();
+                } catch (Exception e) {
+                    i++;
+                }
+            }
+            if (uniformWord.isEmpty()) {
+                uniformWord = word;
+            } else { // add to dictMap and increase_map, later store increasement to file
+                dictMap.put(word, uniformWord);
+                fileSteward.getAddKeywordDictMap().put(word, uniformWord);
             }
         }
         return uniformWord;

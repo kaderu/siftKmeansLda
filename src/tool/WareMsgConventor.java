@@ -49,13 +49,16 @@ public class WareMsgConventor {
     }
 
     private String[] keywordsDealer(String keywords) {
+        if (wareMsg.getBrandName() != null) {
+            keywords = keywords.replaceAll(wareMsg.getBrandName(), ",");
+        }
         String[] eles = keywords.split(",");
+
         List<String> list = new ArrayList<>();
         String[] keywordTerms;
         List<String> termList;
         for (String ele : eles) {
-            if (wareMsg.getBrandName() != null &&
-                    wareMsg.getBrandName().equals(ele.trim())) {
+            if ("".equals(ele.trim())) {
                 continue;
             }
             keywordTerms = ele.replaceAll("[\\'\\|\\[\\]\\(\\)\\+\\-\\&\\/\\\\]", " ").split("\\s+");

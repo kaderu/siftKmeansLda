@@ -32,9 +32,11 @@ public class FileSteward {
     }};
 
     private Map<String, String> addDictMap;
+    private Map<String, String> addKeywordDictMap;
 
     public FileSteward() {
         addDictMap = new HashMap<>();
+        addKeywordDictMap = new HashMap<>();
     }
 
     private Set<String> colorSet;
@@ -425,6 +427,7 @@ public class FileSteward {
         return map;
     }
 
+    // for wanghui's ask
     public static void dealWareTitleFile(String path, String path2) {
         FileInputStream fis = null;
         InputStreamReader isr = null;
@@ -649,11 +652,59 @@ public class FileSteward {
         }
     }
 
+    public static void mergTopic2LeafCateId(String path1, String path2, List<Integer> list) {
+        FileInputStream fis = null;
+        InputStreamReader isr = null;
+        BufferedReader br = null;
 
+        FileWriter fw;
+        BufferedWriter bw;
+        try {
+            String str = "";
+            int topicIndex;
+            fis = new FileInputStream(path1);
+            isr = new InputStreamReader(fis);
+            br = new BufferedReader(isr);
+            fw = new FileWriter(new File(path2));
+            bw = new BufferedWriter(fw);
+            int index = 0;
+            while ((str = br.readLine()) != null) {
+                if ("".equals(str.trim())) {
+                    continue;
+                }
+                topicIndex = list.get(index);
+                bw.write(str + "\t" + topicIndex + "\r\n");
+                index++;
+            }
+            br.close();
+            isr.close();
+            fis.close();
+            bw.close();
+            fw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public Map<String, String> readTranslateFile() {
         Map<String, String> map = new HashMap<>();
-        if (!new File("translate.dic").exists()) {
+
+        Map<String, String> mapTitle = dictReader("translate.dic");
+        Map<String, String> mapKeyword = dictReader("keyword_translate.dic");
+        // add for single leaf_cate 2017/8/9, small size of wordnet
+        Map<String, String> mapWordnet = dictReader("C:\\Users\\zhangshangzhi\\Desktop\\pic\\pic_75061333\\private_dict.txt");
+
+        map.putAll(mapTitle);
+        map.putAll(mapKeyword);
+        map.putAll(mapWordnet);
+
+
+        return map;
+    }
+
+    private Map<String, String> dictReader(String path) {
+        Map<String, String> map = new HashMap<>();
+        if (!new File(path).exists()) {
             return map;
         }
 
@@ -663,7 +714,7 @@ public class FileSteward {
         try {
             String str = "";
             String[] eles;
-            fis = new FileInputStream("translate.dic");
+            fis = new FileInputStream(path);
             isr = new InputStreamReader(fis);
             br = new BufferedReader(isr);
             while ((str = br.readLine()) != null) {
@@ -683,14 +734,28 @@ public class FileSteward {
     }
 
     public void storeAddTranslateFile() {
-        File file = new File("translate.dic");
+        storeFile("translate.dic", addDictMap, 1);
+        storeFile("keyword_translate.dic", addKeywordDictMap, 2);
+    }
+
+    private void storeFile(String dic, Map<String, String> map, int type) { // type 1 for title, type 2 for keyword
+        Map<String, String> oriMap = dictReader(dic);
+        if (type == 1) {
+            mapMergeMultiTracker(oriMap, map);
+        } else if (type == 2) {
+            mapMergePasteTracker(oriMap, map);
+        } else {
+            oriMap.putAll(map);
+        }
+
+        File file = new File(dic);
         FileWriter fw;
         BufferedWriter bw;
         try {
-            fw = new FileWriter(file, true);
+            fw = new FileWriter(file);
             bw = new BufferedWriter(fw);
-            for (Map.Entry<String, String> entry : addDictMap.entrySet()) {
-                bw.write(entry.getKey() + "\t" + entry.getValue() + "\r\n");
+            for (String key : oriMap.keySet()) {
+                bw.write(key + "\t" + oriMap.get(key) + "\n");
             }
             bw.close();
             fw.close();
@@ -699,9 +764,105 @@ public class FileSteward {
         }
     }
 
+    // while add translate map to ori, deal with case: paste for [keyword]
+    private void mapMergePasteTracker(Map<String, String> oriMap, Map<String, String> mapAdd) {
+        Map<String, List<String>> paste2OriMap = new HashMap<>();
+        for (final String key : oriMap.keySet()) {
+            if (!paste2OriMap.containsKey(key.replaceAll(" ", ""))) {
+                paste2OriMap.put(key.replaceAll(" ", ""), new ArrayList<String>());
+            }
+            paste2OriMap.get(key.replaceAll(" ", "")).add(key);
+        }
+
+        List<String> colonKeywordList;
+        String realKeyword;
+        String realTranslateStr;
+        for (final Map.Entry<String, String> entry : mapAdd.entrySet()) {
+            if (paste2OriMap.containsKey(entry.getKey().replaceAll(" ", ""))) {
+                colonKeywordList = paste2OriMap.get(entry.getKey().replaceAll(" ", ""));
+                realKeyword = getRealKeyword(entry.getKey(), colonKeywordList);
+                if (realKeyword.equals(entry.getKey())) { // the new comer is 真の物
+                    realTranslateStr = entry.getValue();
+                } else {
+                    realTranslateStr = oriMap.get(realKeyword);
+                }
+                oriMap.put(entry.getKey(), realTranslateStr);
+                for (String ele : colonKeywordList) {
+                    oriMap.put(ele, realTranslateStr);
+                }
+                colonKeywordList.add(entry.getKey());
+            } else {
+                oriMap.put(entry.getKey(), entry.getValue());
+                paste2OriMap.put(entry.getKey().replaceAll(" ", ""), new ArrayList<String>(){{add(entry.getKey());}});
+            }
+        }
+
+        Map<String, List<String>> turnbackMap = new HashMap<>();
+        for (String key : oriMap.keySet()) {
+            if (!turnbackMap.containsKey(oriMap.get(key))) {
+                turnbackMap.put(oriMap.get(key), new ArrayList<String>());
+            }
+            turnbackMap.get(oriMap.get(key)).add(key);
+        }
+        for (String value : turnbackMap.keySet()) {
+            if (value.endsWith("s") &&
+                    turnbackMap.containsKey(value.substring(0, value.length() - 1))) {
+                for (String key : turnbackMap.get(value)) {
+                    oriMap.put(key, value.substring(0, value.length() - 1));
+                }
+            }
+        }
+    }
+
+    // while add translate map to ori, deal with case: multi-s for [title]
+    private void mapMergeMultiTracker(Map<String, String> oriMap, Map<String, String> mapAdd) {
+        Map<String, List<String>> singleMultiMap = new HashMap<>();
+        for (String key : oriMap.keySet()) {
+            if (!singleMultiMap.containsKey(oriMap.get(key))) {
+                singleMultiMap.put(oriMap.get(key), new ArrayList<String>());
+            }
+            singleMultiMap.get(oriMap.get(key)).add(key);
+        }
+        String translateAdd;
+        for (final String key : mapAdd.keySet()) {
+            translateAdd = mapAdd.get(key);
+            if (translateAdd.endsWith("s") &&
+                    singleMultiMap.containsKey(
+                            translateAdd.substring(0, translateAdd.length() - 1))) {
+                oriMap.put(key, translateAdd.substring(0, translateAdd.length() - 1));
+                if (singleMultiMap.containsKey(translateAdd)) {
+                    for (String ele : singleMultiMap.get(translateAdd)) {
+                        oriMap.put(ele, translateAdd.substring(0, translateAdd.length() - 1));
+                    }
+                }
+                singleMultiMap.remove(translateAdd);
+            } else if (singleMultiMap.containsKey(translateAdd + "s")) {
+                oriMap.put(key, translateAdd);
+                for (String ele : singleMultiMap.get(translateAdd + "s")) {
+                    oriMap.put(ele, translateAdd);
+                }
+                singleMultiMap.remove(translateAdd + "s");
+            }
+        }
+    }
+
+    private String getRealKeyword(String keyword, List<String> list) {
+        for (String ele : list) {
+            if (ele.length() > keyword.length()) {
+                keyword = ele;
+            }
+        }
+        return keyword;
+    }
+
     public Map<String, String> getAddDictMap() {
         return addDictMap;
     }
+
+    public Map<String, String> getAddKeywordDictMap() {
+        return addKeywordDictMap;
+    }
+
 
     public Set<String> getColorSet() {
         return colorSet;

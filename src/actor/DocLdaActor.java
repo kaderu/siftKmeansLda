@@ -20,7 +20,7 @@ public class DocLdaActor {
     public static final String lda_model_path_name = "wkbtLda.model";
     public static final String ori_vs_cur_file_name = "oriVsCur.txt";
 
-    public static final int clusterNum = 50;
+    public static final int clusterNum = 3;
 
     public static String wkbt_file;
     public static String wkbt_dict_file;
@@ -28,11 +28,23 @@ public class DocLdaActor {
     public static String da_model_path;
     public static String ori_vs_cur_file;
 
+    public static long categoryId;
+
+
+    public static void init() {
+        // step.1 determine a category_id, let's say, 75061382
+        categoryId = 75061333;
+        initalPath(categoryId);
+        System.out.println("**************************");
+        System.out.println("step.1 initalPath finish...");
+    }
+
 
     public static void main(String[] args) {
+        init();
 
-//          actor();
-        watchActor();
+          actor();
+//        watchActor();
 //          lateWorkActor();
 
 //          merge();
@@ -41,11 +53,8 @@ public class DocLdaActor {
 
 //        kmeansWatchActor();
 
-//        long categoryId = 75061316;
-//        initalPath(categoryId);
-//
 //        ldaPlusKmeans();
-//
+
 //        Map<Long, Number> map = FileSteward.mergTopic2WareId(da_model_path, wkbt_file);
 //        PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
 
@@ -56,12 +65,6 @@ public class DocLdaActor {
     }
 
     public static void actor() {
-        // step.1 determine a category_id, let's say, 75061382
-//        long categoryId = 75061382;
-        long categoryId = 75061316;
-        initalPath(categoryId);
-        System.out.println("**************************");
-        System.out.println("step.1 initalPath finish...");
 
         // step.2 get wareId_keyword_brandName_title from mysql online, store as wkbt.txt in PATH C:\Users\zhangshangzhi\Desktop\pic\pic_75061382
         // help yourself do this.
@@ -93,7 +96,7 @@ public class DocLdaActor {
 
     // this actor use to rename picture with leaf_category_id
     public static void watchActor() {
-        long categoryId = 75061316;
+        long categoryId = 75061333;
         initalPath(categoryId);
         Map<Long, Number> map = FileSteward.mergLeafCate2WareId(wkbt_file);
         PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
@@ -101,8 +104,6 @@ public class DocLdaActor {
 
     // watcher for kmeans, before which we'd replace topic_id with kmeans_cluster_id
     public static void kmeansWatchActor() {
-        long categoryId = 75061316;
-        initalPath(categoryId);
         LateWork lateWork = new LateWork(ori_vs_cur_file);
         List<Ware4LateWork> wareList = lateWork.getWareList();
         Map<Long, Number> map = new HashMap<>();
@@ -114,7 +115,7 @@ public class DocLdaActor {
 
 
     public static void watchMergeCellActor() {
-        long categoryId = 75061316;
+        long categoryId = 75061333;
         initalPath(categoryId);
 //        Map<String, Integer> map = FileSteward.getMergeCellMap(wkbt_file.replace("wkbt.txt", "mergeCateCell.txt"));
         Map<String, Integer> map = FileSteward.getMergeCellMap(wkbt_file.replace("wkbt.txt", "mergeCateCell.txt"), "cate");
@@ -136,7 +137,7 @@ public class DocLdaActor {
 
     // topN term in current leaf_cate and topic
     public static void lateWorkActor() {
-        long categoryId = 75061316;
+        long categoryId = 75061333;
         initalPath(categoryId);
 
         LateWork lateWork = new LateWork(ori_vs_cur_file);
@@ -205,19 +206,23 @@ public class DocLdaActor {
 
     // put piece together
     public static void merge() {
-        long categoryId = 75061316;
+        long categoryId = 75061333;
         initalPath(categoryId);
         MergeSteward mergeSteward = new MergeSteward(ori_vs_cur_file);
         mergeSteward.maidCaptain("topic");
 //        mergeSteward.maidCaptain("cate");
     }
 
-    public static void ldaPlusKmeans() {
+    public static List<Integer> ldaPlusKmeans() {
         List<double[]> kernelList = FileSteward.getKmeansKernelList(wkbt_file.replace("wkbt.txt", "kmeansKernel.txt"));
         List<double[]> gammaList = FileSteward.getGammaTopicSimlarList(FileSteward.getTargGammaFilePath(da_model_path));
+        List<Integer> kmeansClusterIdList = new ArrayList<>();
         for (double[] gammaArray : gammaList) {
-            System.out.println(tellClusterId(gammaArray, kernelList));
+            int kmeansClusterId = tellClusterId(gammaArray, kernelList);
+//            System.out.println(kmeansClusterId);
+            kmeansClusterIdList.add(kmeansClusterId);
         }
+        return kmeansClusterIdList;
     }
 
     private static int tellClusterId(double[] gammaArray, List<double[]> kernelList) {

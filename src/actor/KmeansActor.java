@@ -6,24 +6,29 @@ import weka.core.DistanceFunction;
 import weka.core.Instances;
 import weka.core.converters.ArffLoader;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.util.List;
 
 /**
  * Created by zhangshangzhi on 2017/8/8.
  */
 public class KmeansActor {
 
-    public static final int clusterNum = 150;
+    public static final int clusterNum = 3;
 
     public static void main(String[] args) {
-        Instances ins = null;
 
+        DocLdaActor.init();
+
+        Instances ins = null;
         SimpleKMeans KM = null;
         DistanceFunction disFun = null;
 
         try {
             // 读入样本数据
-            String gammaFilePath = FileSteward.getTargGammaFilePath("C:\\Users\\zhangshangzhi\\Desktop\\pic\\pic_75061316\\wkbtLda.model");
+            String gammaFilePath = FileSteward.getTargGammaFilePath(DocLdaActor.da_model_path);
             File file = new File(gammaFilePath);
             ArffLoader loader = new ArffLoader();
             loader.setFile(file);
@@ -33,12 +38,43 @@ public class KmeansActor {
             KM = new SimpleKMeans();
             KM.setNumClusters(clusterNum);       //设置聚类要得到的类别数量
             KM.buildClusterer(ins);     //开始进行聚类
-            System.out.println(KM.preserveInstancesOrderTipText());
+//            System.out.println(KM.preserveInstancesOrderTipText());
             // 打印聚类结果
-            System.out.println(KM.toString());
-
+//            System.out.println(KM.toString());
+            dealPrintResult(KM.toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        List<Integer> idList = DocLdaActor.ldaPlusKmeans();
+        FileSteward.mergTopic2LeafCateId(DocLdaActor.wkbt_file, DocLdaActor.ori_vs_cur_file, idList);
+        DocLdaActor.kmeansWatchActor();
+    }
+
+    private static void dealPrintResult(String result) {
+        FileWriter fw = null;
+        BufferedWriter bw = null;
+        try {
+            fw = new FileWriter(DocLdaActor.wkbt_file.replace("wkbt.txt", "kmeansKernel.txt"));
+            bw = new BufferedWriter(fw);
+
+            String[] eles = result.split("\\n");
+            int start = 0;
+            for (String ele : eles) {
+                if (ele.contains("=================")) {
+                    start = 1;
+                    continue;
+                }
+                if (start == 1 &&
+                        !"".equals(ele.trim())) {
+                    bw.write(ele + "\n");
+                }
+            }
+            bw.close();
+            fw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }
