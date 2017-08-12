@@ -30,10 +30,16 @@ public class DocLdaActor {
 
     public static long categoryId;
 
-
     public static void init() {
         // step.1 determine a category_id, let's say, 75061382
-        categoryId = 75061333;
+        categoryId = 75061316;
+        initalPath(categoryId);
+        System.out.println("**************************");
+        System.out.println("step.1 initalPath finish...");
+    }
+
+    public static void init(long categoryId) {
+        // step.1 determine a category_id, let's say, 75061382
         initalPath(categoryId);
         System.out.println("**************************");
         System.out.println("step.1 initalPath finish...");
@@ -74,6 +80,27 @@ public class DocLdaActor {
         System.out.println("**************************");
         System.out.println("step.3 gain index file finish...");
 
+        // step.4 work LDA and get lda.model
+        FileSteward.delete(da_model_path);
+        String[] args = new String[]{"est", "0.5", String.valueOf(clusterNum), "settings.txt",
+                lda_input_file, "seeded", da_model_path};
+        LdaEstimate.main(args);
+        System.out.println("**************************");
+        System.out.println("step.4 LDA work finish...");
+
+        // step.5 if we have prepared picture locally, then this method will help group them.
+        Map<Long, Number> map = FileSteward.mergTopic2WareId(da_model_path, wkbt_file);
+        PictureSteward.picturesRename(prefix_path + "pic_" + categoryId, map);
+        System.out.println("**************************");
+        System.out.println("step.5 picture group finish...");
+
+        // step.6 aim to compare status of clustering, put orignal and current status to an file, namely, oriVsCur.csv
+        FileSteward.mergTopic2LeafCateId(wkbt_file, ori_vs_cur_file, map);
+        System.out.println("**************************");
+        System.out.println("step.6 compare status finish, see in oriVsCur.csv ...");
+    }
+
+    public static void actor4Describe() {
         // step.4 work LDA and get lda.model
         FileSteward.delete(da_model_path);
         String[] args = new String[]{"est", "0.5", String.valueOf(clusterNum), "settings.txt",

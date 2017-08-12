@@ -3,8 +3,6 @@ package tool;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by zhangshangzhi on 2017/8/8.
@@ -17,9 +15,11 @@ public class WareMsgConventor {
 
     private String[] titleCells;
 
+    private String describe;
 
     public WareMsgConventor(WareMsg wareMsg) {
         this.wareMsg = wareMsg;
+        this.describe = wareMsg.getDescribe();
         keywords = keywordsDealer(wareMsg.getKeywords());
         titleCells = titleCellsDealer(wareMsg.getTitle());
     }
@@ -48,6 +48,18 @@ public class WareMsgConventor {
         return titleCells;
     }
 
+    public String getDescribe() {
+        return describe;
+    }
+
+    public void setDescribe(String describe) {
+        this.describe = describe;
+    }
+
+    public void setKeywords(String[] keywords) {
+        this.keywords = keywords;
+    }
+
     private String[] keywordsDealer(String keywords) {
         if (wareMsg.getBrandName() != null) {
             keywords = keywords.replaceAll(wareMsg.getBrandName(), ",");
@@ -65,7 +77,7 @@ public class WareMsgConventor {
             termList = new ArrayList<>();
             for (String term : keywordTerms) {
                 if (term.length() >= 2 &&
-                        !HasDigit(term)) {
+                        !FileSteward.HasDigit(term)) {
                     termList.add(term);
                 }
             }
@@ -155,14 +167,13 @@ public class WareMsgConventor {
         return celllist.toArray(new String[celllist.size()]);
     }
 
-    public boolean HasDigit(String content) {
-        boolean flag = false;
-        Pattern p = Pattern.compile(".*\\d+.*");
-        Matcher m = p.matcher(content);
-        if (m.matches()) {
-            flag = true;
+    public String[] detailsDealer(String detail) {
+        if (detail == null ||
+                "".equals(detail.trim())) {
+            return null;
         }
-        return flag;
+        String[] details = detail.split("\001");
+        return details;
     }
 
     public static void main(String[] args) {

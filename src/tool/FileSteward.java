@@ -197,6 +197,9 @@ public class FileSteward {
                 if (eles.length >= 6) {
                     wareMsg.setCateId(Long.parseLong(eles[5]));
                 }
+                if (eles.length >= 8) {
+                    wareMsg.setDescribe(eles[7].trim());
+                }
                 wareMsgList.add(new WareMsgConventor(wareMsg));
             }
         } catch (Exception e) {
@@ -213,6 +216,65 @@ public class FileSteward {
             }
             return wareMsgList;
         }
+    }
+
+    public static void storeTransWareList(String path, List<WareMsgTranslate> list) {
+        FileWriter fw = null;
+        BufferedWriter bw = null;
+        try {
+            String str = "";
+            String[] eles;
+            fw = new FileWriter(path);
+            bw = new BufferedWriter(fw);
+            for (WareMsgTranslate transWare : list) {
+                // wareId + keyword + brandName + title + describe + detail
+                bw.write(transWare.getWareId() + "\t");
+                bw.write(transWare.getKeywords() + "\t");
+                bw.write(transWare.getBrandName() + "\t");
+                bw.write(transWare.getTitle() + "\t");
+                bw.write(transWare.getDescribe() + "\t");
+                bw.write(transWare.getDetail() + "\n");
+            }
+            bw.close();
+            fw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static List<WareMsgTranslate> getTransWareList(String path) {
+        List<WareMsgTranslate> list = new ArrayList<>();
+        FileInputStream fis = null;
+        InputStreamReader isr = null;
+        BufferedReader br = null;
+        try {
+            String str = "";
+            String[] eles;
+            WareMsgTranslate wareMsgTranslate;
+            fis = new FileInputStream(path);
+            isr = new InputStreamReader(fis);
+            br = new BufferedReader(isr);
+            while ((str = br.readLine()) != null) {
+                if ("".equals(str.trim())) {
+                    continue;
+                }
+                wareMsgTranslate = new WareMsgTranslate();
+                eles = str.split("\t");
+                // wareId + keyword + brandName + title + describe + detail
+                wareMsgTranslate.setWareId(Long.parseLong(eles[0]));
+                wareMsgTranslate.setKeywords(eles[1]);
+                wareMsgTranslate.setBrandName(eles[2]);
+                wareMsgTranslate.setTitle(eles[3]);
+                wareMsgTranslate.setDescribe(eles[4]);
+                if (eles.length >= 6) {
+                    wareMsgTranslate.setDetail(eles[5]);
+                }
+                list.add(wareMsgTranslate);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     public static List<Ware4LateWork> getWare4LateWorkList(String path) {
@@ -639,8 +701,16 @@ public class FileSteward {
                 if ("".equals(str.trim())) {
                     continue;
                 }
-                topicIndex = (int) map.get(Long.parseLong(str.split("\t")[0]));
-                bw.write(str + "\t" + topicIndex + "\r\n");
+                String[] eles = str.split("\t");
+                topicIndex = (int) map.get(Long.parseLong(eles[0]));
+                bw.write(eles[0] + "\t"
+                        + eles[1] + "\t"
+                        + eles[2] + "\t"
+                        + eles[3] + "\t"
+                        + eles[4] + "\t"
+                        + eles[5] + "\t"
+                        + eles[6] + "\t"
+                        + topicIndex + "\r\n");
             }
             br.close();
             isr.close();
@@ -686,6 +756,35 @@ public class FileSteward {
         }
     }
 
+    public static Set<String> readStopSet() {
+        Set<String> set = new HashSet<>();
+        if (!new File("stop.dic").exists()) {
+            return set;
+        }
+        FileInputStream fis = null;
+        InputStreamReader isr = null;
+        BufferedReader br = null;
+        try {
+            String str = "";
+            fis = new FileInputStream("stop.dic");
+            isr = new InputStreamReader(fis);
+            br = new BufferedReader(isr);
+            while ((str = br.readLine()) != null) {
+                if ("".equals(str.trim())) {
+                    continue;
+                }
+                set.add(str.trim());
+            }
+            br.close();
+            isr.close();
+            fis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return set;
+    }
+
+
     public Map<String, String> readTranslateFile() {
         Map<String, String> map = new HashMap<>();
 
@@ -702,7 +801,7 @@ public class FileSteward {
         return map;
     }
 
-    private Map<String, String> dictReader(String path) {
+    public Map<String, String> dictReader(String path) {
         Map<String, String> map = new HashMap<>();
         if (!new File(path).exists()) {
             return map;
@@ -756,6 +855,23 @@ public class FileSteward {
             bw = new BufferedWriter(fw);
             for (String key : oriMap.keySet()) {
                 bw.write(key + "\t" + oriMap.get(key) + "\n");
+            }
+            bw.close();
+            fw.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void storeFile(String dic, Map<String, String> map) {
+        File file = new File(dic);
+        FileWriter fw;
+        BufferedWriter bw;
+        try {
+            fw = new FileWriter(file, true);
+            bw = new BufferedWriter(fw);
+            for (String key : map.keySet()) {
+                bw.write(key + "\t" + map.get(key) + "\n");
             }
             bw.close();
             fw.close();

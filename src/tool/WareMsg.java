@@ -18,7 +18,7 @@ public class WareMsg {
 
     private long cateId;
 
-
+    private String describe;
 
     public long getWareId() {
         return wareId;
@@ -68,4 +68,11 @@ public class WareMsg {
         this.cateId = cateId;
     }
 
+    public String getDescribe() {
+        return describe;
+    }
+
+    public void setDescribe(String describe) {
+        this.describe = describe;
+    }
 }
