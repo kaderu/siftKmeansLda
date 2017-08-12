@@ -38,19 +38,21 @@ public class DescribeActor {
             int index;
 
             // keyword
-            for (String ele : ware.getKeywords().toLowerCase().split(",")) {
+            for (String ele : new HashSet<String>(Arrays.asList(ware.getKeywords().toLowerCase().split(",")))) {
                 ele = castrate(ele);
                 if (!ele.isEmpty()) {
                     index = getTermIndex(ele, dictMap); // this will add ele to dicMap
                     addToMap(index, wareTermMap);
-                    for (String cell : ele.split(" ")) {
-                        if (FileSteward.HasDigit(cell) ||
-                                cell.isEmpty() ||
-                                stopSet.contains(cell)) {
-                            continue;
+                    if (ele.contains(" ")) {
+                        for (String cell : ele.split(" ")) {
+                            if (FileSteward.HasDigit(cell) ||
+                                    cell.isEmpty() ||
+                                    stopSet.contains(cell)) {
+                                continue;
+                            }
+                            index = getTermIndex(cell, dictMap);
+                            addToMap(index, wareTermMap);
                         }
-                        index = getTermIndex(cell, dictMap);
-                        addToMap(index, wareTermMap);
                     }
                 }
             }
@@ -72,17 +74,23 @@ public class DescribeActor {
             }
 
             // describe
-            for (String ele : ware.getDescribe().toLowerCase().split("\001")) {
-                for (String term : castrate(ele).split(" ")) {
-                    if (stopSet.contains(term) ||
-                            FileSteward.HasDigit(ele) ||
-                            ele.isEmpty() ||
-                            ele.length() > 20) {
-                        continue;
-                    }
-                    index = getTermIndex(term, dictMap);
-                    if (type == 0) {
-                        addToMap(index, wareTermMap);
+            if (ware.getDescribe().isEmpty()) { // if no describe, then it can not group with others, seperate it.
+                wareTermMap = new HashMap<Integer, Integer>(){{
+                    put(0, 1);
+                }};
+            } else {
+                for (String ele : ware.getDescribe().toLowerCase().split("\001")) {
+                    for (String term : castrate(ele).split(" ")) {
+                        if (stopSet.contains(term) ||
+                                FileSteward.HasDigit(term) ||
+                                term.isEmpty() ||
+                                term.length() > 20) {
+                            continue;
+                        }
+                        index = getTermIndex(term, dictMap);
+                        if (type == 0) {
+                            addToMap(index, wareTermMap);
+                        }
                     }
                 }
             }
@@ -101,7 +109,7 @@ public class DescribeActor {
         if (indexMap.containsKey(term)) {
             return indexMap.get(term);
         } else {
-            int index = indexMap.size();
+            int index = indexMap.size() + 1; // so we stipulate index start from 1
             indexMap.put(term, index);
             return index;
         }
@@ -116,6 +124,6 @@ public class DescribeActor {
     }
 
     public static String castrate(String input) {
-        return input.replaceAll("[^0-9a-zA-Z]"," ");
+        return input.replaceAll("amp;"," ").replaceAll("[^0-9a-zA-Z]"," ");
     }
 }
