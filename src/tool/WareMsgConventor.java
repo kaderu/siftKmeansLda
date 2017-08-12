@@ -17,9 +17,12 @@ public class WareMsgConventor {
 
     private String describe;
 
+    private String title;
+
     public WareMsgConventor(WareMsg wareMsg) {
         this.wareMsg = wareMsg;
-        this.describe = wareMsg.getDescribe();
+        describe = wareMsg.getDescribe();
+        title = wareMsg.getTitle();
         keywords = keywordsDealer(wareMsg.getKeywords());
         titleCells = titleCellsDealer(wareMsg.getTitle());
     }
@@ -46,6 +49,14 @@ public class WareMsgConventor {
 
     public String[] getTitleCells() {
         return titleCells;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getDescribe() {

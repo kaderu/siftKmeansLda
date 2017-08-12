@@ -61,13 +61,15 @@ public class TranslateActor {
     }
 
     public static void translate(WareMsgConventor ware, Map<String, String> transMap) {
+        // describe
         String describe = ware.getDescribe();
-        if (describe != null ||
+        if (describe != null &&
                 !"".equals(describe.trim())) {
             String[] elements = describe.split("[\\s][\\s][\\s]+");
             StringBuffer describeBuffer = new StringBuffer();
             for (int i = 0; i < elements.length; i++) {
-                if ("".equals(elements[i].trim()) ||
+                if (elements[i] == null ||
+                        "".equals(elements[i].trim()) ||
                         "detail".equals(elements[i].trim().toLowerCase()) ||
                         "detail:".equals(elements[i].replaceAll("\\s+", "").toLowerCase())) { // "detail" this single phrase we don't need
                     continue;
@@ -80,7 +82,14 @@ public class TranslateActor {
             ware.setDescribe(describeBuffer.toString());
         }
 
+        // title
+        String title = ware.getTitle();
+        if (title != null &&
+                !title.trim().isEmpty()) {
+            ware.setTitle(translate(title, transMap));
+        }
 
+        // keywords
         String[] keywords = ware.getKeywords();
         for (int i = 0; i < keywords.length; i++) {
             String translateStr = translate(keywords[i], transMap);

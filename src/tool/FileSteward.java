@@ -198,7 +198,7 @@ public class FileSteward {
                     wareMsg.setCateId(Long.parseLong(eles[5]));
                 }
                 if (eles.length >= 8) {
-                    wareMsg.setDescribe(eles[7].trim());
+                    wareMsg.setDescribe("NULL".equals(eles[7].trim()) ? "" : eles[7].trim());
                 }
                 wareMsgList.add(new WareMsgConventor(wareMsg));
             }
@@ -267,11 +267,16 @@ public class FileSteward {
                 wareMsgTranslate.setWareId(Long.parseLong(eles[0]));
                 wareMsgTranslate.setKeywords(eles[1]);
                 wareMsgTranslate.setBrandName(eles[2]);
-                describe = eles[4].split("\001", 2);
-                // title or the main part of title
-                wareMsgTranslate.setTitle(describe[0]);
-                // part else
-                wareMsgTranslate.setDescribe(describe.length == 2 ? describe[1] : "");
+                wareMsgTranslate.setTitle(eles[3]);
+                if (eles.length >= 5) {
+                    describe = eles[4].split("\001", 2);
+                    // title or the main part of title
+                    wareMsgTranslate.setTitle(describe[0]);
+                    // part else
+                    wareMsgTranslate.setDescribe(describe.length == 2 ? describe[1] : "");
+                } else {
+                    wareMsgTranslate.setDescribe("");
+                }
                 if (eles.length >= 6) {
                     wareMsgTranslate.setDetail(eles[5]);
                 }

@@ -28,11 +28,11 @@ public class WareMsgTranslate {
 
         brandName = ware.getBrandName();
 
-        StringBuffer title = new StringBuffer();
-        for (String cell : ware.getTitleCells()) {
-            title.append(cell).append(" ");
-        }
-        this.title = title.toString();
+//        StringBuffer title = new StringBuffer();
+//        for (String cell : ware.getTitleCells()) {
+//            title.append(cell).append(" ");
+//        }
+        this.title = ware.getTitle();
 
         this.describe = ware.getDescribe();
 

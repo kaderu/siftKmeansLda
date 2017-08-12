@@ -39,6 +39,7 @@ public class DescribeActor {
 
             // keyword
             for (String ele : ware.getKeywords().toLowerCase().split(",")) {
+                ele = castrate(ele);
                 if (!ele.isEmpty()) {
                     index = getTermIndex(ele, dictMap); // this will add ele to dicMap
                     addToMap(index, wareTermMap);
@@ -48,7 +49,7 @@ public class DescribeActor {
                                 stopSet.contains(cell)) {
                             continue;
                         }
-                        index = getTermIndex(ele, dictMap);
+                        index = getTermIndex(cell, dictMap);
                         addToMap(index, wareTermMap);
                     }
                 }
@@ -59,10 +60,11 @@ public class DescribeActor {
             addToMap(index, wareTermMap);
 
             // title
-            for (String ele : ware.getTitle().toLowerCase().split(" ")) {
+            for (String ele : castrate(ware.getTitle()).toLowerCase().split(" ")) {
                 if (FileSteward.HasDigit(ele) ||
                         ele.isEmpty() ||
-                        stopSet.contains(ele)) {
+                        stopSet.contains(ele) ||
+                        ele.length() > 20) {
                     continue;
                 }
                 index = getTermIndex(ele, dictMap);
@@ -74,7 +76,8 @@ public class DescribeActor {
                 for (String term : castrate(ele).split(" ")) {
                     if (stopSet.contains(term) ||
                             FileSteward.HasDigit(ele) ||
-                            ele.isEmpty()) {
+                            ele.isEmpty() ||
+                            ele.length() > 20) {
                         continue;
                     }
                     index = getTermIndex(term, dictMap);
