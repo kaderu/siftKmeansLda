@@ -1,6 +1,7 @@
 package actor;
 
 import tool.FileSteward;
+import tool.Tokenizer;
 import tool.WareMsgTranslate;
 
 import java.util.*;
@@ -34,12 +35,11 @@ public class DescribeActor {
 
         for (WareMsgTranslate ware : translateWareList) {
             Map<Integer, Integer> wareTermMap = new HashMap<>();
-            Map<Integer, Integer> wareTermOriMap = new HashMap<>(); // for type 1
             int index;
 
             // keyword
             for (String ele : new HashSet<String>(Arrays.asList(ware.getKeywords().toLowerCase().split(",")))) {
-                ele = castrate(ele);
+                ele = castrate(ele, stopSet);
                 if (!ele.isEmpty()) {
                     index = getTermIndex(ele, dictMap); // this will add ele to dicMap
                     addToMap(index, wareTermMap);
@@ -106,6 +106,7 @@ public class DescribeActor {
     }
 
     public static int getTermIndex(String term, Map<String, Integer> indexMap) {
+        term = Tokenizer.token(term); // get root term
         if (indexMap.containsKey(term)) {
             return indexMap.get(term);
         } else {
@@ -125,5 +126,23 @@ public class DescribeActor {
 
     public static String castrate(String input) {
         return input.replaceAll("amp;"," ").replaceAll("[^0-9a-zA-Z]"," ");
+    }
+
+    public static String castrate(String input, Set<String> set) {
+        input = castrate(input);
+        String[] inputArray = input.split(" ");
+        for (int i = 0; i < inputArray.length; i++) {
+            if (set.contains(inputArray[i])) {
+                inputArray[i] = "";
+            }
+        }
+        Arrays.sort(inputArray);
+        StringBuffer result = new StringBuffer();
+        for (String ele : inputArray) {
+            if (!ele.trim().isEmpty()) {
+                result.append(ele.trim()).append(" ");
+            }
+        }
+        return result.toString().trim();
     }
 }

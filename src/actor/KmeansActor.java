@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class KmeansActor {
 
-    public static final int clusterNum = 3;
+    public static final int clusterNum = 200;
 
     public static void main(String[] args) {
 

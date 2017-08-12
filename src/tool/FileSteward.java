@@ -310,7 +310,7 @@ public class FileSteward {
                 eles = str.split("\t");
                 wareMsg.setWareId(Long.parseLong(eles[0]));
                 wareMsg.setLeafCateId(Long.parseLong(eles[5]));
-                wareMsg.setTopicId(Long.parseLong(eles[7]));
+                wareMsg.setTopicId(Long.parseLong(eles[8]));
                 wareList.add(wareMsg);
             }
         } catch (Exception e) {

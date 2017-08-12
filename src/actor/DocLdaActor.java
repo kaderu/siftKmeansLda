@@ -20,7 +20,7 @@ public class DocLdaActor {
     public static final String lda_model_path_name = "wkbtLda.model";
     public static final String ori_vs_cur_file_name = "oriVsCur.txt";
 
-    public static final int clusterNum = 100;
+    public static final int clusterNum = 30;
 
     public static String wkbt_file;
     public static String wkbt_dict_file;
