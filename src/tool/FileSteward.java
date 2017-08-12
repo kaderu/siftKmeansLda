@@ -128,13 +128,21 @@ public class FileSteward {
     public static void storeDict(Map<String, Integer> map, String path) {
         delete(path);
 
+        List<Map.Entry<String, Integer>> infoIds = new ArrayList<>(map.entrySet());
+        Collections.sort(infoIds, new Comparator<Map.Entry<String, Integer>>() {
+            @Override
+            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                return (o1.getValue() - o2.getValue());
+            }
+        });
+
         File file = new File(path);
         FileWriter fw;
         BufferedWriter bw;
         try {
             fw = new FileWriter(file);
             bw = new BufferedWriter(fw);
-            for (Map.Entry<String, Integer> entry : map.entrySet()) {
+            for (Map.Entry<String, Integer> entry : infoIds) {
                 bw.write(entry.getValue() + "\t" + entry.getKey() + "\r\n");
             }
             bw.close();
