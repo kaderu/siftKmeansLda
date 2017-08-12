@@ -242,6 +242,7 @@ public class FileSteward {
         }
     }
 
+    // make a trick here: cut and title (maybe part of title) from describe
     public static List<WareMsgTranslate> getTransWareList(String path) {
         List<WareMsgTranslate> list = new ArrayList<>();
         FileInputStream fis = null;
@@ -251,6 +252,8 @@ public class FileSteward {
             String str = "";
             String[] eles;
             WareMsgTranslate wareMsgTranslate;
+            String[] describe;
+
             fis = new FileInputStream(path);
             isr = new InputStreamReader(fis);
             br = new BufferedReader(isr);
@@ -264,8 +267,11 @@ public class FileSteward {
                 wareMsgTranslate.setWareId(Long.parseLong(eles[0]));
                 wareMsgTranslate.setKeywords(eles[1]);
                 wareMsgTranslate.setBrandName(eles[2]);
-                wareMsgTranslate.setTitle(eles[3]);
-                wareMsgTranslate.setDescribe(eles[4]);
+                describe = eles[4].split("\001", 2);
+                // title or the main part of title
+                wareMsgTranslate.setTitle(describe[0]);
+                // part else
+                wareMsgTranslate.setDescribe(describe.length == 2 ? describe[1] : "");
                 if (eles.length >= 6) {
                     wareMsgTranslate.setDetail(eles[5]);
                 }
@@ -1052,5 +1058,7 @@ public class FileSteward {
     public static void main(String[] args) {
         String str = "00";
         System.out.println(Integer.parseInt(str));
+        String str2 = "123";
+        String[] array = str2.split("\t", 2);
     }
 }
