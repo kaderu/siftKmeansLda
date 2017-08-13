@@ -73,7 +73,7 @@ public class WareMsgConventor {
 
     private String[] keywordsDealer(String keywords) {
         if (wareMsg.getBrandName() != null) {
-            keywords = keywords.replaceAll(wareMsg.getBrandName(), ",").replaceAll(wareMsg.getBrandName().replaceAll(".", ""), ",");
+            keywords = keywords.replaceAll(wareMsg.getBrandName(), ",").replaceAll(wareMsg.getBrandName().replaceAll("\\.", ""), ",");
         }
         String[] eles = keywords.split(",");
 
@@ -81,6 +81,9 @@ public class WareMsgConventor {
         String[] keywordTerms;
         List<String> termList;
         for (String ele : eles) {
+            if (ele.replaceAll("[^0-9a-zA-Z]", "").indexOf(wareMsg.getBrandName()) != -1) {
+                ele = ele.replaceAll("[^0-9a-zA-Z]", "").replace(wareMsg.getBrandName(), " ").trim();
+            }
             if ("".equals(ele.trim())) {
                 continue;
             }

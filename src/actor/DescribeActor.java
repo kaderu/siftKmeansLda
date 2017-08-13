@@ -286,13 +286,13 @@ public class DescribeActor {
         // first centence
         if (centenceArray[0].contains(" is a")) { // case -- Silvercross ... Britannia is a baby stroller made from quality materials so durable and durable.
             result.append(centenceArray[0].split(" is ", 2)[1]).append(" ");
-        } else {
+        } else { // do not get a "is"
             int titleTermLen = ware.getTitle().split("\\s+").length;
             String[] firstCentenceArray = centenceArray[0].split("\\s+");
             if (titleTermLen >= firstCentenceArray.length) { // centence short than title, we guess it is useless
                 return "";
             }
-            for (int i = titleTermLen; i < firstCentenceArray.length && i < titleTermLen + 5; i++) { // TODO we'd better limit times of this loop
+            for (int i = titleTermLen; i < Math.min(firstCentenceArray.length, titleTermLen + 4); i++) { // TODO we'd better limit times of this loop
                 result.append(firstCentenceArray[i]).append(" ");
             }
         }
@@ -303,7 +303,14 @@ public class DescribeActor {
                 centenceArray[1].indexOf(" is ") <= 20) {
             result.append(centenceArray[1].substring(0, centenceArray[1].indexOf(" is ")));
             System.out.println("centence 2nd:\t" + centenceArray[1].substring(0, centenceArray[1].indexOf(" is ")).trim());
+        } else if (centenceArray.length > 1 &&
+                centenceArray[1].contains(" are ") &&
+                centenceArray[1].indexOf(" are ") <= 20) {
+            result.append(centenceArray[1].substring(0, centenceArray[1].indexOf(" are ")));
+            System.out.println("centence 2nd:\t" + centenceArray[1].substring(0, centenceArray[1].indexOf(" are ")).trim());
         }
+
+
         return result.toString().trim();
     }
 }
