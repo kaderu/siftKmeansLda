@@ -36,6 +36,13 @@ public class DescribeActor {
         for (WareMsgTranslate ware : translateWareList) {
             Map<Integer, Integer> wareTermMap = new HashMap<>();
             int index;
+            // let's make a interval discussion here for what count most for a ware doc.
+            // If keywords is of high-quanlity, then keyword count the most. Then is brandName, which connect similar wares together.
+            // If both above lose efficacy (like K:lego B:lego case), then we bank on title.
+            // But sometimes, title contribute little -- maybe it is just brandName plus version-number plus color. This case we should ask DESCRIBE for help.
+            // Then how ?
+            // Full-text helps little as a conclution of our test. But a CONTENT label always tell us what this ware is on earth. We like this label.
+            // At worset, nothing help above. Then we have to focus on describe content. As a commen sence, the first centence would told us cat or dog, that's enough.
 
             // keyword
             for (String ele : new HashSet<String>(Arrays.asList(ware.getKeywords().toLowerCase().split(",")))) {
@@ -110,7 +117,8 @@ public class DescribeActor {
         if (indexMap.containsKey(term)) {
             return indexMap.get(term);
         } else {
-            int index = indexMap.size() + 1; // so we stipulate index start from 1
+//            int index = indexMap.size() + 1; // so we stipulate index start from 1
+            int index = indexMap.size(); // so we stipulate index start from 1
             indexMap.put(term, index);
             return index;
         }
