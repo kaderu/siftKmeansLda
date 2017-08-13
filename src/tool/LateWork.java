@@ -102,6 +102,8 @@ public class LateWork {
     }
 
     public static void main(String[] args) {
-
+        String str = "s      213    we 2  ";
+//        str = str.toLowerCase();
+        String[] strA = str.split("\\s+");
     }
 }

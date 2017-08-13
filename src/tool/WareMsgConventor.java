@@ -73,7 +73,7 @@ public class WareMsgConventor {
 
     private String[] keywordsDealer(String keywords) {
         if (wareMsg.getBrandName() != null) {
-            keywords = keywords.replaceAll(wareMsg.getBrandName(), ",");
+            keywords = keywords.replaceAll(wareMsg.getBrandName(), ",").replaceAll(wareMsg.getBrandName().replaceAll(".", ""), ",");
         }
         String[] eles = keywords.split(",");
 
