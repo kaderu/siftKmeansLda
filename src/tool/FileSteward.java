@@ -618,6 +618,62 @@ public class FileSteward {
 
     }
 
+    public static String getTargKmeansInputFilePath(String gammaPath) {
+        String gammaFilePath = getTargGammaFilePath(gammaPath);
+        String kmeansInputFilePath = gammaFilePath.replace(".gamma", ".sigma");
+
+        FileInputStream fis = null;
+        InputStreamReader isr = null;
+        BufferedReader br = null;
+        FileWriter fw = null;
+        BufferedWriter bw = null;
+        try {
+            fis = new FileInputStream(gammaFilePath);
+            isr = new InputStreamReader(fis);
+            br = new BufferedReader(isr);
+            fw = new FileWriter(kmeansInputFilePath);
+            bw = new BufferedWriter(fw);
+            String str;
+            String[] eles;
+            boolean hasKmeansHead = false;
+            while ((str = br.readLine()) != null) {
+                if (str.trim().isEmpty() ||
+                        str.startsWith("@")) {
+                    continue;
+                }
+                eles = str.split(" ");
+                if (!hasKmeansHead) {
+                    bw.write("@RELATION cate_remix\n\n");
+                    for (int i = 1; i <= eles.length; i++) {
+                        bw.write("@ATTRIBUTE " + i + " REAL\n");
+                    }
+                    bw.write("\n@data\n");
+                    hasKmeansHead = true;
+                }
+                double[] topicWeight = new double[eles.length];
+                double sum = 0;
+                for (int i = 0; i < eles.length; i++) {
+                    topicWeight[i] = Double.parseDouble(eles[i]);
+                    sum += topicWeight[i];
+                }
+                StringBuffer normalizeBuffer = new StringBuffer();
+                for (int i = 0; i < topicWeight.length; i++) {
+                    normalizeBuffer.append(topicWeight[i] / sum).append(" ");
+                }
+                bw.write(normalizeBuffer.toString().trim() + "\n");
+            }
+            bw.close();
+            fw.close();
+
+            br.close();
+            isr.close();
+            fis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return kmeansInputFilePath;
+    }
+
     public static Map<Long, Number> mergTopic2WareId(String gammaPath, String wkbtPath) {
         List<WareMsgConventor> wareMsgList = getWareMsgList(wkbtPath);
         String leastFilePath =  getTargGammaFilePath(gammaPath);

@@ -75,9 +75,9 @@ public class DescribeActor {
 
             // describe
             if (ware.getDescribe().isEmpty()) { // if no describe, then it can not group with others, seperate it.
-                wareTermMap = new HashMap<Integer, Integer>(){{
-                    put(0, 1);
-                }};
+//                wareTermMap = new HashMap<Integer, Integer>(){{
+//                    put(0, 1);
+//                }};
             } else {
                 for (String ele : ware.getDescribe().toLowerCase().split("\001")) {
                     for (String term : castrate(ele).split(" ")) {

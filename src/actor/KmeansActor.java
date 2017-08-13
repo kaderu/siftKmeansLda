@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class KmeansActor {
 
-    public static final int clusterNum = 200;
+    public static final int clusterNum = 4;
 
     public static void main(String[] args) {
 
@@ -28,8 +28,8 @@ public class KmeansActor {
 
         try {
             // 读入样本数据
-            String gammaFilePath = FileSteward.getTargGammaFilePath(DocLdaActor.da_model_path);
-            File file = new File(gammaFilePath);
+            String normalizeGammaFilePath = FileSteward.getTargKmeansInputFilePath(DocLdaActor.da_model_path); // normalize done
+            File file = new File(normalizeGammaFilePath);
             ArffLoader loader = new ArffLoader();
             loader.setFile(file);
             ins = loader.getDataSet();
