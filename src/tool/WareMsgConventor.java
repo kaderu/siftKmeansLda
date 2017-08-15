@@ -11,6 +11,8 @@ public class WareMsgConventor {
 
     private WareMsg wareMsg;
 
+    private long wareId;
+
     private String[] keywords;
 
     private String[] titleCells;
@@ -19,16 +21,29 @@ public class WareMsgConventor {
 
     private String title;
 
+    public WareMsgConventor() {
+
+    }
+
     public WareMsgConventor(WareMsg wareMsg) {
         this.wareMsg = wareMsg;
         describe = wareMsg.getDescribe();
         title = wareMsg.getTitle();
+        wareId = wareMsg.getWareId();
         keywords = keywordsDealer(wareMsg.getKeywords());
         titleCells = titleCellsDealer(wareMsg.getTitle());
     }
 
+    public WareMsg getWareMsg() {
+        return wareMsg;
+    }
+
     public long getWareId() {
-        return wareMsg.getWareId();
+        return wareId;
+    }
+
+    public void setWareId(long wareId) {
+        this.wareId = wareId;
     }
 
     public long getCateId() {
@@ -95,7 +110,7 @@ public class WareMsgConventor {
                     termList.add(term);
                 }
             }
-            if (termList.size() <= 4) {
+//            if (termList.size() <= 4) {
                 StringBuffer fixKeywordBuffer = new StringBuffer();
                 for (String term : termList) {
                     fixKeywordBuffer.append(term).append(" ");
@@ -103,7 +118,7 @@ public class WareMsgConventor {
                 if (!"".equals(fixKeywordBuffer.toString().trim())) {
                     list.add(fixKeywordBuffer.toString().trim());
                 }
-            }
+//            }
         }
         return list.toArray(new String[list.size()]);
     }

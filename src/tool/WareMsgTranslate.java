@@ -21,12 +21,18 @@ public class WareMsgTranslate {
         wareId = ware.getWareId();
 
         StringBuffer keywords = new StringBuffer();
-        for (String keyword : ware.getKeywords()) {
-            keywords.append(keyword).append(",");
+        if (ware.getKeywords() != null) {
+            for (String keyword : ware.getKeywords()) {
+                keywords.append(keyword).append(",");
+            }
         }
         this.keywords = keywords.toString();
 
-        brandName = ware.getBrandName();
+        if (ware.getWareMsg() == null) {
+            brandName = "";
+        } else {
+            brandName = ware.getBrandName();
+        }
 
 //        StringBuffer title = new StringBuffer();
 //        for (String cell : ware.getTitleCells()) {

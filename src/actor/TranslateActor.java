@@ -91,13 +91,16 @@ public class TranslateActor {
 
         // keywords
         String[] keywords = ware.getKeywords();
-        for (int i = 0; i < keywords.length; i++) {
-            String translateStr = translate(keywords[i], transMap);
-            if (!translateStr.isEmpty()) {
-                keywords[i] = translateStr;
+        if (keywords != null &&
+                keywords.length > 0) {
+            for (int i = 0; i < keywords.length; i++) {
+                String translateStr = translate(keywords[i], transMap);
+                if (!translateStr.isEmpty()) {
+                    keywords[i] = translateStr;
+                }
             }
+            ware.setKeywords(keywords);
         }
-        ware.setKeywords(keywords);
     }
 
 

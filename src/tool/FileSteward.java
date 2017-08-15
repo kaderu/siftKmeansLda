@@ -318,7 +318,7 @@ public class FileSteward {
                 eles = str.split("\t");
                 wareMsg.setWareId(Long.parseLong(eles[0]));
                 wareMsg.setLeafCateId(Long.parseLong(eles[5]));
-                wareMsg.setTopicId(Long.parseLong(eles[8]));
+                wareMsg.setTopicId(Long.parseLong(eles[eles.length - 1]));
                 wareList.add(wareMsg);
             }
         } catch (Exception e) {
@@ -618,7 +618,7 @@ public class FileSteward {
 
     }
 
-    public static String getTargKmeansInputFilePath(String gammaPath) {
+    public static String getTargKmeansInputFilePath(String gammaPath, boolean needNormalize) {
         String gammaFilePath = getTargGammaFilePath(gammaPath);
         String kmeansInputFilePath = gammaFilePath.replace(".gamma", ".sigma");
 
@@ -650,17 +650,22 @@ public class FileSteward {
                     bw.write("\n@data\n");
                     hasKmeansHead = true;
                 }
-                double[] topicWeight = new double[eles.length];
-                double sum = 0;
-                for (int i = 0; i < eles.length; i++) {
-                    topicWeight[i] = Double.parseDouble(eles[i]);
-                    sum += topicWeight[i];
+                if (needNormalize) {
+                    double[] topicWeight = new double[eles.length];
+                    double squareSum = 0;
+                    for (int i = 0; i < eles.length; i++) {
+                        topicWeight[i] = Double.parseDouble(eles[i]);
+                        squareSum += topicWeight[i] * topicWeight[i];
+                    }
+                    double distance = Math.sqrt(squareSum);
+                    StringBuffer normalizeBuffer = new StringBuffer();
+                    for (int i = 0; i < topicWeight.length; i++) {
+                        normalizeBuffer.append(topicWeight[i] / distance).append(" ");
+                    }
+                    bw.write(normalizeBuffer.toString().trim() + "\n");
+                } else {
+                    bw.write(str + "\n");
                 }
-                StringBuffer normalizeBuffer = new StringBuffer();
-                for (int i = 0; i < topicWeight.length; i++) {
-                    normalizeBuffer.append(topicWeight[i] / sum).append(" ");
-                }
-                bw.write(normalizeBuffer.toString().trim() + "\n");
             }
             bw.close();
             fw.close();
@@ -1061,12 +1066,13 @@ public class FileSteward {
 
     public static List<double[]> getKmeansKernelList(String path) {
         List<double[]> kernelList = new ArrayList<>();
-        for (int i = 0; i < KmeansActor.clusterNum; i++) {
+        for (int i = 0; i < KmeansActor.clusterNum; i++) { //TODO fix
             kernelList.add(new double[DocLdaActor.clusterNum]);
         }
         FileInputStream fis = null;
         InputStreamReader isr = null;
         BufferedReader br = null;
+        int kernelLen = 0;
         try {
             String str = "";
             String[] eles;
@@ -1078,7 +1084,8 @@ public class FileSteward {
                     continue;
                 }
                 eles = str.split("\\s+");
-                for (int i = 0; i < KmeansActor.clusterNum; i++) {
+                kernelLen = eles.length;
+                for (int i = 0; i < eles.length - 2; i++) {
                     kernelList.get(i)[Integer.parseInt(eles[0]) - 1] = Double.parseDouble(eles[i + 2]);
                 }
             }
@@ -1088,6 +1095,10 @@ public class FileSteward {
         } catch (Exception e) {
             e.printStackTrace();
         }
+//        for (double[] kernel : kernelList) {
+//            System.arraycopy(kernel, 0, kernel, 0, kernelLen);
+//        }
+
         return kernelList;
     }
 

@@ -11,6 +11,27 @@ import java.util.*;
  */
 public class DescribeActor {
 
+    private static final Set<String> prepSet = new HashSet<String>() {{
+        add("in");
+        add("on");
+        add("with");
+        add("and");
+        add("by");
+        add("for");
+        add("at");
+        add("about");
+        add("under");
+        add("of");
+        add("into");
+        add("within");
+        add("throughout");
+        add("through");
+        add("inside");
+        add("outside");
+        add("without");
+        add("that");
+    }};
+
     public static void main(String[] args) {
         DocLdaActor.init();
         List<WareMsgTranslate> translateWareList = FileSteward.getTransWareList(DocLdaActor.wkbt_file.replace("wkbt.txt", "transWare.txt"));
@@ -47,7 +68,7 @@ public class DescribeActor {
              But sometimes, title contribute little -- maybe it is just brandName plus version-number plus color. This case we should ask DESCRIBE for help.
              Then how ?
              Full-text helps little as a conclution of our test. But a CONTENT label always tell us what this ware is on earth. We like this label.
-             At worset, nothing help above. Then we have to focus on describe content. As a commen sence, the first centence would told us cat or dog, that's enough.
+             At worset, nothing help above. Then we have to focus on describe content. As a commen sence, the first sentence would told us cat or dog, that's enough.
             */
 
             boolean msgEnough = false;
@@ -77,8 +98,8 @@ public class DescribeActor {
                 }
             }
             // brandName
-            index = getTermIndex(ware.getBrandName().toLowerCase(), dictMap);
-            addToMap(index, wareTermMap);
+//            index = getTermIndex(ware.getBrandName().toLowerCase(), dictMap);
+//            addToMap(index, wareTermMap);
             // title
             if (!msgEnough &&
                     ware.getTitle() != null) {
@@ -91,14 +112,14 @@ public class DescribeActor {
                     }
                     index = getTermIndex(ele, dictMap);
                     addToMap(index, wareTermMap);
-//                    msgEnough = true;
+                    msgEnough = true;
                 }
             }
             // describe
             String describe = ware.getDescribe();
             if (describe != null &&
                     !describe.trim().isEmpty()) {
-                describe = describe.toLowerCase().trim();
+                describe = describe.toLowerCase().trim().replaceAll(ware.getBrandName() + " ", " ");;
                 // focus on [Contents:]
                 boolean aimAt = false;
                 for (String ele : describe.split("\001")) {
@@ -124,21 +145,24 @@ public class DescribeActor {
                         break;
                     }
                 }
-                // focus on first describe centence
+                // focus on first describe sentence
                 if (!msgEnough) {
-                    int centenceLen = 0;
+                    int sentenceLen = 0;
                     int curLen;
-                    String targCentence = "";
+                    String targSentence = "";
                     for (String ele : describe.split("\001")) {
-                        if ((curLen = castrate(ele).split("\\s+").length) > centenceLen) {
-                            centenceLen = curLen;
-                            targCentence = ele.trim();
+                        if ((curLen = castrate(ele).split("\\s+").length) > sentenceLen) {
+                            sentenceLen = curLen;
+                            targSentence = ele.trim();
+                            if (curLen >= 20) { // if length is enough, we judge it the first sentence
+                                break;
+                            }
                         }
                     }
-                    if (!targCentence.isEmpty()) {
-                        String centenceKernel = getCentenceKernel(targCentence, ware);
-                        if (!centenceKernel.isEmpty()) {
-                            for (String term : castrate(centenceKernel).split("\\s+")) {
+                    if (!targSentence.isEmpty()) {
+                        String sentenceKernel = getsentenceKernel(targSentence, ware);
+                        if (!sentenceKernel.isEmpty()) {
+                            for (String term : castrate(sentenceKernel).split("\\s+")) {
                                 if (stopSet.contains(term) ||
                                         FileSteward.HasDigit(term) ||
                                         term.length() > 20) {
@@ -279,38 +303,60 @@ public class DescribeActor {
         return content;
     }
 
-    public static String getCentenceKernel(String centence, WareMsgTranslate ware) {
+    public static String getsentenceKernel(String sentence, WareMsgTranslate ware) {
         StringBuffer result = new StringBuffer();
-        centence = centence.replace(ware.getBrandName(), " ");
-        String[] centenceArray = centence.split("\\.");
-        // first centence
-        if (centenceArray[0].contains(" is a")) { // case -- Silvercross ... Britannia is a baby stroller made from quality materials so durable and durable.
-            result.append(centenceArray[0].split(" is ", 2)[1]).append(" ");
+        sentence = sentence.replace(ware.getBrandName(), " ");
+        String[] sentenceArray = sentence.split("\\.");
+        // first sentence
+        if (sentenceArray[0].contains(" is a")) { // case -- Silvercross ... Britannia is a baby stroller made from quality materials so durable and durable.
+            String str = sentenceArray[0].split(" is ", 2)[1];
+            str = stopByPrep(str);
+            result.append(str).append(" ");
+        } else if (sentenceArray[0].startsWith("a ") ||
+                sentenceArray[0].contains("an ")) {
+            result.append(stopByPrep(sentenceArray[0])).append(" ");
         } else { // do not get a "is"
             int titleTermLen = ware.getTitle().split("\\s+").length;
-            String[] firstCentenceArray = centenceArray[0].split("\\s+");
-            if (titleTermLen >= firstCentenceArray.length) { // centence short than title, we guess it is useless
+            String[] firstsentenceArray = sentenceArray[0].split("\\s+");
+            if (titleTermLen >= firstsentenceArray.length) { // sentence short than title, we guess it is useless
                 return "";
             }
-            for (int i = titleTermLen; i < Math.min(firstCentenceArray.length, titleTermLen + 4); i++) { // TODO we'd better limit times of this loop
-                result.append(firstCentenceArray[i]).append(" ");
+            for (int i = titleTermLen; i < firstsentenceArray.length; i++) { // TODO we'd better limit times of this loop
+                if (!prepSet.contains(firstsentenceArray[i])) {
+                    result.append(firstsentenceArray[i]).append(" ");
+                } else {
+                    break;
+                }
             }
         }
-        System.out.println("centence 1st:\t" + result.toString().trim());
-        // secend centence
-        if (centenceArray.length > 1 &&
-                centenceArray[1].contains(" is ") &&
-                centenceArray[1].indexOf(" is ") <= 20) {
-            result.append(centenceArray[1].substring(0, centenceArray[1].indexOf(" is ")));
-            System.out.println("centence 2nd:\t" + centenceArray[1].substring(0, centenceArray[1].indexOf(" is ")).trim());
-        } else if (centenceArray.length > 1 &&
-                centenceArray[1].contains(" are ") &&
-                centenceArray[1].indexOf(" are ") <= 20) {
-            result.append(centenceArray[1].substring(0, centenceArray[1].indexOf(" are ")));
-            System.out.println("centence 2nd:\t" + centenceArray[1].substring(0, centenceArray[1].indexOf(" are ")).trim());
+        System.out.println("sentence 1st:\t" + result.toString().trim());
+        // secend sentence
+        if (sentenceArray.length > 1 &&
+                sentenceArray[1].contains(" is ") &&
+                sentenceArray[1].indexOf(" is ") <= 20) {
+            result.append(sentenceArray[1].substring(0, sentenceArray[1].indexOf(" is ")));
+            System.out.println("sentence 2nd:\t" + sentenceArray[1].substring(0, sentenceArray[1].indexOf(" is ")).trim());
+        } else if (sentenceArray.length > 1 &&
+                sentenceArray[1].contains(" are ") &&
+                sentenceArray[1].indexOf(" are ") <= 20) {
+            result.append(sentenceArray[1].substring(0, sentenceArray[1].indexOf(" are ")));
+            System.out.println("sentence 2nd:\t" + sentenceArray[1].substring(0, sentenceArray[1].indexOf(" are ")).trim());
         }
 
 
+        return result.toString().trim();
+    }
+
+    public static String stopByPrep(String sentence) {
+        StringBuffer result = new StringBuffer();
+        String[] arrays = sentence.split("\\s+");
+        for (String ele :arrays) {
+            if (!prepSet.contains(ele)) {
+                result.append(ele).append(" ");
+            } else {
+                return result.toString().trim();
+            }
+        }
         return result.toString().trim();
     }
 }
