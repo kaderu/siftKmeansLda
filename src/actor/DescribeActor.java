@@ -18,6 +18,7 @@ public class DescribeActor {
         add("and");
         add("by");
         add("for");
+        add("from");
         add("at");
         add("about");
         add("under");
@@ -30,13 +31,81 @@ public class DescribeActor {
         add("outside");
         add("without");
         add("that");
+        add(",");
+        add(".");
+        add("or");
+        add("as");
+        add("made");
     }};
 
     public static void main(String[] args) {
         DocLdaActor.init();
         List<WareMsgTranslate> translateWareList = FileSteward.getTransWareList(DocLdaActor.wkbt_file.replace("wkbt.txt", "transWare.txt"));
+
+        // make output
+        for (WareMsgTranslate ware : translateWareList) {
+            System.out.print(ware.getWareId() + "\t");
+            String describe = ware.getDescribe();
+            if (describe == null ||
+                    describe.trim().isEmpty()) {
+                System.out.println("\t0");
+                continue;
+            }
+            String[] describeArrays = describe.toLowerCase().trim().replaceAll(ware.getBrandName() + " ", " ").split("\001");
+
+            // focus on [Contents:]
+            boolean stop = false;
+            boolean aimAt = false;
+            for (String ele : describeArrays) {
+                if (ele.endsWith("contents:") ||
+                        ele.endsWith("content:")) { // we focus on next line
+                    aimAt = true;
+                    continue;
+                } else if (ele.contains("contents:") ||
+                        ele.contains("content:")) { // we focus on current line
+                    aimAt = true;
+                }
+                if (aimAt) {
+                    String contentKernel = getContentKernel(ele);
+                    System.out.println("[C]" + contentKernel);
+                    stop = true;
+                    break;
+                }
+            }
+            if (!stop) {
+                int shortPhraseNum = 0;
+                for (String centence : describeArrays) {
+                    if (describeArrays.length > 1 &&
+                            centence.split(" ").length < 10) {
+                        shortPhraseNum++;
+                        if (shortPhraseNum == 3) { // pity but we have walk into detail
+                            System.out.println("\t1");
+                            break;
+                        }
+                        continue;
+                    }
+                    centence = centence.split("\\.")[0];
+                    if (centence.contains(" is a ") ||
+                            centence.contains(" is an ")) {
+                        String str = centence.split(" is ", 2)[1];
+                        str = stopByPrep(str);
+                        System.out.println(str);
+                    } else if (centence.startsWith("a ") ||
+                            centence.startsWith("an ")) {
+                        System.out.println(stopByPrep(centence));
+                    } else {
+                        System.out.println(centence.split("\\.|,")[0] + "\t1");
+                    }
+                    break;
+                }
+            }
+        }
+
+        // ori
+        /*
         index(translateWareList);
         DocLdaActor.actor4Describe();
+        */
     }
 
     public static void index(List<WareMsgTranslate> translateWareList) {
@@ -68,7 +137,7 @@ public class DescribeActor {
              But sometimes, title contribute little -- maybe it is just brandName plus version-number plus color. This case we should ask DESCRIBE for help.
              Then how ?
              Full-text helps little as a conclution of our test. But a CONTENT label always tell us what this ware is on earth. We like this label.
-             At worset, nothing help above. Then we have to focus on describe content. As a commen sence, the first sentence would told us cat or dog, that's enough.
+             At worset, nothing help above. Then we have to focus on describe content. As a commen sence, the first centence would told us cat or dog, that's enough.
             */
 
             boolean msgEnough = false;
@@ -123,10 +192,10 @@ public class DescribeActor {
                 // focus on [Contents:]
                 boolean aimAt = false;
                 for (String ele : describe.split("\001")) {
-                    if (ele.endsWith("Contents:")) { // we focus on next line
+                    if (ele.endsWith("contents:")) { // we focus on next line
                         aimAt = true;
                         continue;
-                    } else if (ele.contains("Contents:")) { // we focus on current line
+                    } else if (ele.contains("contents:")) { // we focus on current line
                         aimAt = true;
                     }
                     if (aimAt) {
@@ -292,14 +361,15 @@ public class DescribeActor {
     }
 
     public static String getContentKernel(String content) {
-        if (content.startsWith("Contents:")) {
+        if (content.indexOf("contents:") != -1 ||
+                content.indexOf("content:") != -1) {
             content = content.split(":", 2)[1].trim(); // case -- Contents: Milk powder container 1 piece
         }
-        if (content.startsWith(",")) {
-            content = content.split(":")[0].trim(); // case -- Contents: 1 bottle Wide Neck Milk with Dot Size 2-M, 1 Bottle Bottle with Soft Silicone Spout
+        if (content.contains(",")) {
+            content = content.split(",")[0].trim(); // case -- Contents: 1 bottle Wide Neck Milk with Dot Size 2-M, 1 Bottle Bottle with Soft Silicone Spout
         }
         // TODO more ..
-        System.out.println("content:\t" + content);
+//        System.out.println("content:\t" + content);
         return content;
     }
 
@@ -349,6 +419,7 @@ public class DescribeActor {
 
     public static String stopByPrep(String sentence) {
         StringBuffer result = new StringBuffer();
+//        sentence = sentence.split("\\.|,")[0];
         String[] arrays = sentence.split("\\s+");
         for (String ele :arrays) {
             if (!prepSet.contains(ele)) {
